@@ -1,2 +1,2 @@
 # yawc
-Yet Another Wrist Clock
+This is yawc - Yet Another Wrist Clock
