@@ -15,20 +15,22 @@ FORMAT = ihex
 #FORMAT = binary
 TARGET = main
 
-SRC = src/Os/Os.c 
+SRC = src/$(TARGET).c
+SRC += src/Os/Os.c 
 SRC += src/Os/Os_Lcfg.c 
 SRC += src/Uart/Uart.c  
-SRC += src/Gpio/Gpio_Lcfg.c 
+SRC += src/Uart/Uart_Lcfg.c  
 SRC += src/Gpio/Gpio.c
+SRC += src/Gpio/Gpio_Lcfg.c 
 SRC += src/Spi/Spi.c
 SRC += src/Spi/Spi_Lcfg.c
 SRC += src/Adc/Adc.c
 SRC += src/Adc/Adc_Lcfg.c
 SRC += src/Ssd1306/Ssd1306.c
 SRC += src/Ssd1306/Ssd1306_Lcfg.c
-SRC += src/$(TARGET).c
+SRC += src/Dbg/Dbg.c
 
-INC = -I./inc -I./src/Os -I./src/Uart -I./src/Spi -I./src/Ssd1603 -I./src/Adc -I./src/Gpio
+INC = -I./inc -I./src/Os -I./src/Uart -I./src/Spi -I./src/Ssd1603 -I./src/Adc -I./src/Gpio -I./src/Dbg
 
 ASRC =
 OPT = s
@@ -240,7 +242,7 @@ clean:
 #	$(REMOVE_TREE) $(DOXYGEN_OUTPUT_DIR)
 
 size:
-	-/bin/avr-mem.sh $(TARGET).elf $(MCU)
+	avr-size --mcu=$(MCU) -C $(TARGET).elf
 
 depend:
 	if grep '^# DO NOT DELETE' $(MAKEFILE) >/dev/null; \

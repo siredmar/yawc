@@ -13,8 +13,8 @@
 #define SPI_WCOL_BIT_POSITION_UI8  ((uint8)6)
 #define SPI_SPI2X_BIT_POSITION_UI8 ((uint8)0)
 
-#define SPI_SPCR_ADDRESS ((uint8)0x2D)
-#define SPI_SPSR_ADDRESS  ((uint8)0x2E)
-#define SPI_SPDR_ADDRESS  ((uint8)0x2F)
+#define SPI_SPCR_ADDRESS ((uint8)0x2C)
+#define SPI_SPSR_ADDRESS  ((uint8)0x2D)
+#define SPI_SPDR_ADDRESS  ((uint8)0x2E)
 
 #endif /* SPI_CFG_H_ */

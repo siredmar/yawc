@@ -2,6 +2,7 @@
 #define PLATFORM_TYPES_H
 
 #define NULL ((void*)(0))
+#define NULL_PTR ((void*)(0))
 
 #define FALSE 			0
 #define TRUE 			1

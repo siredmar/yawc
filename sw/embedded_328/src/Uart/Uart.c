@@ -2,7 +2,7 @@
  * \file uart.c
  * @brief This file contains the implementation of the UART module.
  *
- * Copyright (C) 2011  Armin Schlegel, Christian Eismann
+ * Copyright (C) 2015  Armin Schlegel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,187 +20,303 @@
 
 #include "Uart.h"
 #include "Uart_Cfg.h"
+#include "Uart_Lcfg.h"
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
-/*--- Macros ---------------------------------------------------------*/
-/** Baudrate for UART communication */
-//#define BAUD_UART_0 115200UL
-//#define BAUD_UART_1 115200UL
-//#define BAUD_UART_2 115200UL
-//#define BAUD_UART_3 115200UL
+static Uart_RxCallbackType      Uart_UartRxIntCallback_pv[UART_MAX_NUM_OF_UARTS];
+static Uart_TxCallbackType      Uart_UartTxIntCallback_pv[UART_MAX_NUM_OF_UARTS];
+static Uart_ConfigType        *LcfgConfigPtr_ps;
 
-///** Calculated UBRR value for high baud rate */
-//#define UBRR_VAL_UART_0 ((F_CPU+BAUD_UART_0*8)/(BAUD_UART_0*16)-1)
-//#define UBRR_VAL_UART_1 ((F_CPU+BAUD_UART_1*8)/(BAUD_UART_1*16)-1)
-//#define UBRR_VAL_UART_2 ((F_CPU+BAUD_UART_2*8)/(BAUD_UART_2*16)-1)
-//#define UBRR_VAL_UART_3 ((F_CPU+BAUD_UART_3*8)/(BAUD_UART_3*16)-1)
-
-/**
- * @brief Initialize UART communication with given parameters rxen, txen, rxcie and BAUD_VAL_HIGH
- *
- * @param[in] unit   UART HW Unit
- * @param[in] rxen   enable receiving
- * @param[in] txen   enable transmitting
- * @param[in] rxcie  enable receiving interrupts
- */
-void Uart_Init(Uart_hwUnitType unit, Uart_rxenType rxen, Uart_txenType txen, Uart_rxieType rxcie, uint32 Baudrate, uint8 u2x)
+volatile const Uart_RegisterAddressType Uart_RegisterAdress_as[UART_MAX_NUM_OF_UARTS] =
 {
-    uint8 UBRR_VAL;
-    if(u2x == 1)
+        {
+                (uint8*) UART_UDR0_ADDRESS,
+                (uint8*) UART_UCSR0A_ADDRESS,
+                (uint8*) UART_UCSR0B_ADDRESS,
+                (uint8*) UART_UCSR0C_ADDRESS,
+                (uint8*) UART_UBRR0L_ADDRESS,
+                (uint8*) UART_UBRR0H_ADDRESS
+        },
+#if UART_NUMBER_OF_UARTS >= 2
+        {
+                (uint8*) UART_UDR0_ADDRESS,
+                (uint8*) UART_UCSR0A_ADDRESS,
+                (uint8*) UART_UCSR0B_ADDRESS,
+                (uint8*) UART_UCSR0C_ADDRESS,
+                (uint8*) UART_UBRR0L_ADDRESS,
+                (uint8*) UART_UBRR0H_ADDRESS
+        },
+#endif
+#if UART_NUMBER_OF_UARTS >= 3
+        {
+                (uint8*) UART_UDR0_ADDRESS,
+                (uint8*) UART_UCSR0A_ADDRESS,
+                (uint8*) UART_UCSR0B_ADDRESS,
+                (uint8*) UART_UCSR0C_ADDRESS,
+                (uint8*) UART_UBRR0L_ADDRESS,
+                (uint8*) UART_UBRR0H_ADDRESS
+        },
+#endif
+#if UART_NUMBER_OF_UARTS >= 4
+        {
+                (uint8*) UART_UDR0_ADDRESS,
+                (uint8*) UART_UCSR0A_ADDRESS,
+                (uint8*) UART_UCSR0B_ADDRESS,
+                (uint8*) UART_UCSR0C_ADDRESS,
+                (uint8*) UART_UBRR0L_ADDRESS,
+                (uint8*) UART_UBRR0H_ADDRESS
+        }
+#endif
+};
+
+#define USART_BAUDRATE 57600
+#define BAUD_PRESCALE ((( F_CPU / ( USART_BAUDRATE * 16UL))) - 1)
+void Uart_Init(void)
+{
+    Uart_HwUnitType HwUnitCounter = UART_HWUNIT_0;
+
+    uint32                     Uart_CpuFrequency_ui32;
+    Uart_HwUnitType            Uart_HwUnit_e;
+    uint32                     Uart_Baudrate_ui32;
+    Uart_CharacterSizeType     Uart_CharacterSize_e;
+    Uart_ParityModeType        Uart_Parity_e;
+    Uart_StopBitsType          Uart_StopBits_e;
+    Uart_DoubleTxSpeedType     Uart_DoubleTxSpeed_e;
+    Uart_RxEnableType          Uart_RxEnabled_e;
+    Uart_TxEnableType          Uart_TxEnabled_e;
+    Uart_RxInterruptEnableType Uart_RxInterruptEnable_e;
+    Uart_TxInterruptEnableType Uart_TxInterruptEnable_e;
+
+    uint16 Baudrate_ui16;
+
+    LcfgConfigPtr_ps = (Uart_ConfigType*)Uart_GetLcfgData();
+
+    Uart_CpuFrequency_ui32 = LcfgConfigPtr_ps->Uart_CpuFrequency_ui32;
+    for(HwUnitCounter = UART_HWUNIT_0; HwUnitCounter < UART_MAX_NUM_OF_UARTS; HwUnitCounter++)
     {
-        UBRR_VAL = 2*((F_CPU+Baudrate*8)/(Baudrate*16)-1);
+        Uart_HwUnit_e                       = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_HwUnit_e;
+        Uart_Baudrate_ui32                  = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_Baudrate_ui32;
+        Uart_CharacterSize_e                = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_CharacterSize_e;
+        Uart_Parity_e                       = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_Parity_e;
+        Uart_StopBits_e                     = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_StopBits_e;
+        Uart_DoubleTxSpeed_e                = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_DoubleTxSpeed_e;
+        Uart_RxEnabled_e                    = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_RxEnabled_e;
+        Uart_TxEnabled_e                    = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_TxEnabled_e;
+        Uart_RxInterruptEnable_e            = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_RxInterruptEnable_e;
+        Uart_TxInterruptEnable_e            = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_TxInterruptEnable_e;
+        Uart_UartRxIntCallback_pv[HwUnitCounter] = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_RxIntCallback_pv;
+        Uart_UartTxIntCallback_pv[HwUnitCounter] = LcfgConfigPtr_ps->Uart[HwUnitCounter].Uart_TxIntCallback_pv;
+
+        /* Uart Baudrate */
+        if(Uart_DoubleTxSpeed_e == UART_DOUBLE_TX_SPEED_ENABLED)
+        {
+            Baudrate_ui16 = 2 * ((uint32)(Uart_CpuFrequency_ui32 + (uint32)(Uart_Baudrate_ui32 * 8)) / ((uint32)(Uart_Baudrate_ui32 * 16)) - 1);
+        }
+        else
+        {
+            Baudrate_ui16 = ((uint32)(Uart_CpuFrequency_ui32 + (uint32)(Uart_Baudrate_ui32 * 8)) / ((uint32)(Uart_Baudrate_ui32 * 16)) - 1);
+        }
+
+        *(Uart_RegisterAdress_as[HwUnitCounter].Uart_BaudrateHighRegister_pui8) = ((Baudrate_ui16 >> 8u) & 0xFF);
+        *(Uart_RegisterAdress_as[HwUnitCounter].Uart_BaudrateLowRegister_pui8)  = (Baudrate_ui16 & 0xFF);
+
+        *(Uart_RegisterAdress_as[HwUnitCounter].Uart_ControlStatusARegister_pui8) = (Uart_DoubleTxSpeed_e << UART_U2X_BIT_POSITION_UI8);
+
+        *(Uart_RegisterAdress_as[HwUnitCounter].Uart_ControlStatusBRegister_pui8) = \
+                  (Uart_RxInterruptEnable_e << UART_RXCIE_BIT_POSITION_UI8) \
+                | (Uart_TxInterruptEnable_e << UART_TXCIE_BIT_POSITION_UI8) \
+                | (Uart_RxEnabled_e << UART_RXEN_BIT_POSITION_UI8) \
+                | (Uart_TxEnabled_e << UART_TXEN_BIT_POSITION_UI8);
+
+
+        *(Uart_RegisterAdress_as[HwUnitCounter].Uart_ControlStatusCRegister_pui8) = \
+                  (Uart_StopBits_e << UART_USBS_BIT_POSITION_UI8) \
+                | (Uart_Parity_e << UART_UPM0_BIT_POSITION_UI8);
+
+        if(Uart_CharacterSize_e == UART_CHAR_5_BIT)
+        {
+            *(Uart_RegisterAdress_as[HwUnitCounter].Uart_ControlStatusCRegister_pui8) |= (0x00u << UART_UCSZ0_BIT_POSITION_UI8);
+        }
+        else if(Uart_CharacterSize_e == UART_CHAR_6_BIT)
+        {
+            *(Uart_RegisterAdress_as[HwUnitCounter].Uart_ControlStatusCRegister_pui8) |= (0x01u << UART_UCSZ0_BIT_POSITION_UI8);
+        }
+        else if(Uart_CharacterSize_e == UART_CHAR_7_BIT)
+        {
+            *(Uart_RegisterAdress_as[HwUnitCounter].Uart_ControlStatusCRegister_pui8) |= (0x02u << UART_UCSZ0_BIT_POSITION_UI8);
+        }
+        else if(Uart_CharacterSize_e == UART_CHAR_8_BIT)
+        {
+            *(Uart_RegisterAdress_as[HwUnitCounter].Uart_ControlStatusCRegister_pui8) |= (0x03u << UART_UCSZ0_BIT_POSITION_UI8);
+        }
+        else /* if(Uart_CharacterSize_e == UART_CHAR_9_BIT)*/
+        {
+            *(Uart_RegisterAdress_as[HwUnitCounter].Uart_ControlStatusCRegister_pui8) |= (0x03u << UART_UCSZ0_BIT_POSITION_UI8);
+            *(Uart_RegisterAdress_as[HwUnitCounter].Uart_ControlStatusBRegister_pui8) |= (1u << UART_UCSZ2_BIT_POSITION_UI8);
+        }
     }
-    else
+}
+
+
+void Uart_WriteCharacter(Uart_HwUnitType HwUnit, uint16 data)
+{
+    while (!(*(Uart_RegisterAdress_as[HwUnit].Uart_ControlStatusARegister_pui8) & (1 << UART_UDRE_BIT_POSITION_UI8)));
+    if(LcfgConfigPtr_ps->Uart[HwUnit].Uart_CharacterSize_e == UART_CHAR_9_BIT)
     {
-        UBRR_VAL = ((F_CPU+Baudrate*8)/(Baudrate*16)-1);
+        *(Uart_RegisterAdress_as[HwUnit].Uart_ControlStatusBRegister_pui8) |= (((data >> 8) & 0x01) << UART_TXB8_BIT_POSITION_UI8);
     }
 
-    switch(unit)
+    *(Uart_RegisterAdress_as[HwUnit].Uart_DataRegister_pui8) = (data & 0xFF);
+}
+
+void Uart_WriteString(Uart_HwUnitType HwUnit, const uint8 *s)
+{
+   while (*s )
    {
-#if UART0_USED == TRUE
-        case UART_0:
-       {
-           UCSR0A = (uint8)u2x << U2X0;
-           UCSR0B = ((uint8)rxen << RXEN0) | ((uint8)rxcie << RXCIE0) | ((uint8)txen << TXEN0);
-           UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
-           UBRR0H = UBRR_VAL >> 8;
-           UBRR0L = UBRR_VAL & 0xFF;
-           break;
-       }
-#endif
-#if UART1_USED == TRUE
-       case UART_1:
-       {
-           UCSR1A = (uint8)u2x << U2X1;
-           UCSR1B = ((uint8)rxen << RXEN1) | ((uint8)rxcie << RXCIE1) | ((uint8)txen << TXEN1);
-           UCSR1C = (1 << UCSZ11) | (1 << UCSZ10);
-           UBRR1H = UBRR_VAL >> 8;
-           UBRR1L = UBRR_VAL & 0xFF;
-           break;
-       }
-#endif
-#if UART2_USED == TRUE
-       case UART_2:
-       {
-           UCSR2A = (uint8)u2x << U2X2;
-           UCSR2B = ((uint8)rxen << RXEN2) | ((uint8)rxcie << RXCIE2) | ((uint8)txen << TXEN2);
-           UCSR2C = (1 << UCSZ21) | (1 << UCSZ20);
-           UBRR2H = UBRR_VAL >> 8;
-           UBRR2L = UBRR_VAL & 0xFF;
-           break;
-       }
-#endif
-#if UART3_USED == TRUE
-       case UART_3:
-       {
-           UCSR3A = (uint8)u2x << U2X3;
-           UCSR3B = ((uint8)rxen << RXEN3) | ((uint8)rxcie << RXCIE3) | ((uint8)txen << TXEN3);
-           UCSR3C = (1 << UCSZ31) | (1 << UCSZ30);
-           UBRR3H = UBRR_VAL >> 8;
-           UBRR3L = UBRR_VAL & 0xFF;
-           break;
-       }
-#endif
-       default:
-       {
-           break;
-       }
-   }
-
-}
-
-
-/**
- * @brief Sends a single character via UART
- *
- * @param[in] c byte to send
- */
-void Uart_Putc(Uart_hwUnitType unit, uint8 byte)
-{
-    switch(unit)
-    {
-#if UART0_USED == TRUE
-        case UART_0:
-        {
-            while (!(UCSR0A & (1 << UDRE0)));
-            UDR0 = byte;         /* sende Zeichen */
-            break;
-        }
-#endif
-#if UART1_USED == TRUE
-        case UART_1:
-        {
-            while (!(UCSR1A & (1 << UDRE1)));
-            UDR1 = byte;         /* sende Zeichen */
-            break;
-        }
-#endif
-#if UART2_USED == TRUE
-        case UART_2:
-        {
-            while (!(UCSR2A & (1 << UDRE2)));
-            UDR2 = byte;         /* sende Zeichen */
-            break;
-        }
-#endif
-#if UART3_USED == TRUE
-        case UART_3:
-        {
-            while (!(UCSR3A & (1 << UDRE3)));
-            UDR3 = byte;         /* sende Zeichen */
-            break;
-        }
-#endif
-        default:
-        {
-            break;
-        }
-    }
-}
-
-/**
- * @brief Transmit string
- *
- * @param[in] s pointer to string to send
- */
-void Uart_Puts(Uart_hwUnitType unit, const uint8 *s) {
-   while (*s ) {
-      Uart_Putc(unit, *s);
+      Uart_WriteCharacter(HwUnit, *s);
       s++;
    }
 }
 
-
-/**
- * @brief Interrupt Service Routine for receiving charakters via UART
- *
- */
-#if UART0_USED == TRUE
-ISR(USART0_RX_vect)
+ISR(USART_RX_vect)
 {
-    Uart_Putc(UART_1, UDR0);
-}
-#endif
+    uint16 data = 0u;
 
-#if UART1_USED == TRUE
+    if(LcfgConfigPtr_ps->Uart[UART_HWUNIT_0].Uart_CharacterSize_e == UART_CHAR_9_BIT)
+    {
+        data = ((((*(Uart_RegisterAdress_as[UART_HWUNIT_0].Uart_ControlStatusBRegister_pui8) >> UART_RXB8_BIT_POSITION_UI8) & 0x01)) << 8u) & 0x100;
+    }
+    data |= (*(Uart_RegisterAdress_as[UART_HWUNIT_0].Uart_DataRegister_pui8) & 0xFF);
+
+    if(Uart_UartRxIntCallback_pv[UART_HWUNIT_0] != NULL)
+    {
+        (Uart_UartRxIntCallback_pv[UART_HWUNIT_0])(data);
+    }
+    else
+    {
+        /* do nothing */
+    }
+}
+
+#if UART_NUMBER_OF_UARTS >= 2
 ISR(USART1_RX_vect)
 {
-    Uart_Putc(UART_0, UDR1);
+    uint16 data;
+
+    if(LcfgConfigPtr_ps->Uart[UART_HWUNIT_1].Uart_CharacterSize_e == UART_CHAR_9_BIT)
+    {
+        data = ((((*(Uart_RegisterAdress_as[UART_HWUNIT_1].Uart_ControlStatusBRegister_pui8) >> UART_RXB8_BIT_POSITION_UI8) & 0x01)) << 8u) & 0x100;
+    }
+    data =  (*(Uart_RegisterAdress_as[UART_HWUNIT_1].Uart_DataRegister_pui8) & 0xFF);
+
+    if(Uart_UartRxIntCallback_pv[UART_HWUNIT_1] != NULL)
+    {
+        (Uart_UartRxIntCallback_pv[UART_HWUNIT_1])(data);
+    }
+    else
+    {
+        /* do nothing */
+    }
 }
 #endif
 
-#if UART2_USED == TRUE
-ISR(Uart_Putc)
+#if UART_NUMBER_OF_UARTS >= 3
+ISR(USART2_RX_vect)
 {
+    uint16 data;
+
+    if(LcfgConfigPtr_ps->Uart[UART_HWUNIT_2].Uart_CharacterSize_e == UART_CHAR_9_BIT)
+    {
+        data = ((((*(Uart_RegisterAdress_as[UART_HWUNIT_2].Uart_ControlStatusBRegister_pui8) >> UART_RXB8_BIT_POSITION_UI8) & 0x01)) << 8u) & 0x100;
+    }
+    data =  (*(Uart_RegisterAdress_as[UART_HWUNIT_2].Uart_DataRegister_pui8) & 0xFF);
+
+    if(Uart_UartRxIntCallback_pv[UART_HWUNIT_2] != NULL)
+    {
+        (Uart_UartRxIntCallback_pv[UART_HWUNIT_2])(data);
+    }
+    else
+    {
+        /* do nothing */
+    }
+}
+#endif
+
+#if UART_NUMBER_OF_UARTS >= 4
+ISR(USART3_RX_vect)
+{
+    uint16 data;
+
+    if(LcfgConfigPtr_ps->Uart[UART_HWUNIT_3].Uart_CharacterSize_e == UART_CHAR_9_BIT)
+    {
+        data = ((((*(Uart_RegisterAdress_as[UART_HWUNIT_3].Uart_ControlStatusBRegister_pui8) >> UART_RXB8_BIT_POSITION_UI8) & 0x01)) << 8u) & 0x100;
+    }
+    data =  (*(Uart_RegisterAdress_as[UART_HWUNIT_3].Uart_DataRegister_pui8) & 0xFF);
+
+    if(Uart_UartRxIntCallback_pv[UART_HWUNIT_3] != NULL)
+    {
+        (Uart_UartRxIntCallback_pv[UART_HWUNIT_3])(data);
+    }
+    else
+    {
+        /* do nothing */
+    }
 
 }
 #endif
 
-#if UART3_USED == TRUE
-ISR(Uart_Putc)
+ISR(USART_TX_vect)
 {
+    if(Uart_UartTxIntCallback_pv[UART_HWUNIT_0] != NULL)
+    {
+        (Uart_UartTxIntCallback_pv[UART_HWUNIT_0])();
+    }
+    else
+    {
+        /* do nothing */
+    }
+}
 
+#if UART_NUMBER_OF_UARTS >= 2
+ISR(USART1_TX_vect)
+{
+    if(Uart_UartTxIntCallback_pv[UART_HWUNIT_1] != NULL)
+    {
+        (Uart_UartTxIntCallback_pv[UART_HWUNIT_1])();
+    }
+    else
+    {
+        /* do nothing */
+    }
+}
+#endif
+
+#if UART_NUMBER_OF_UARTS >= 3
+ISR(USART2_TX_vect)
+{
+    if(Uart_UartTxIntCallback_pv[UART_HWUNIT_2] != NULL)
+    {
+        (Uart_UartTxIntCallback_pv[UART_HWUNIT_2])();
+    }
+    else
+    {
+        /* do nothing */
+    }
+}
+#endif
+
+#if UART_NUMBER_OF_UARTS >= 4
+ISR(USART3_TX_vect)
+{
+    if(Uart_UartTxIntCallback_pv[UART_HWUNIT_3] != NULL)
+    {
+        (Uart_UartTxIntCallback_pv[UART_HWUNIT_3])();
+    }
+    else
+    {
+        /* do nothing */
+    }
 }
 #endif
 
