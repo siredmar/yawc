@@ -34,8 +34,6 @@ static void Dbg_HexToString(uint8* str, uint8 len, uint8 val)
 
 void Dbg_ReadRegister(uint8 UartHwUnit, uint8 str[], uint8 address)
 {
-//    uint8 strlen = strlen(str);
-
     uint8 registerString[8];
     uint8 registerValue;
     registerValue = (*((uint8*)address));

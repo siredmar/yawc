@@ -14,26 +14,26 @@
 #include <Os_Cfg.h>
 #include <Os_Lcfg.h>
 
-extern void tskUART( uint16 param0, void *param1 );
-extern void tskHighPrio( uint16 param0, void *param1 );
+void UartHelloTask(void);
+void UartWorldTask(void);
 
 const Os_TaskConfigType Os_LcfgTaskConfig[OS_MAX_NUMBER_OF_TASKS] =
 {
         /* Id, Handler, prio, parameter0, parameter1 */
         /* Task 1 */
-//        {
-//                tskUART,
-//                10,
-//                0,
-//                "UART1"
-//        },
-//        /* Task 2 */
-//        {
-//                tskUART,
-//                10,
-//                1,
-//                "UART2"
-//        },
+        {
+                UartHelloTask,
+                10,
+                0,
+                0
+        },
+        /* Task 2 */
+        {
+                UartWorldTask,
+                10,
+                0,
+                0
+        },
 //        /* Task 3 */
 //        {
 //                tskUART,
