@@ -172,7 +172,7 @@ void Uart_WriteCharacter(Uart_HwUnitType HwUnit, uint16 data)
 
 void Uart_WriteString(Uart_HwUnitType HwUnit, const uint8 *s)
 {
-   while (*s )
+   while (*s)
    {
       Uart_WriteCharacter(HwUnit, *s);
       s++;

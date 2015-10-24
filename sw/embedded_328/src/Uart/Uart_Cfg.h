@@ -52,28 +52,28 @@
 #define UART_UBRR0H_ADDRESS  ((uint8)0xC5)
 
 #if UART_NUMBER_OF_UARTS >= 2
-#define UART_UDR1_ADDRESS    ((uint8)0x00)
-#define UART_UCSR1A_ADDRESS  ((uint8)0x00)
-#define UART_UCSR1B_ADDRESS  ((uint8)0x00)
-#define UART_UCSR1C_ADDRESS  ((uint8)0x00)
-#define UART_UBRR1L_ADDRESS  ((uint8)0x00)
-#define UART_UBRR1H_ADDRESS  ((uint8)0x00)
+#define UART_UDR1_ADDRESS    ((uint8)TODO)
+#define UART_UCSR1A_ADDRESS  ((uint8)TODO)
+#define UART_UCSR1B_ADDRESS  ((uint8)TODO)
+#define UART_UCSR1C_ADDRESS  ((uint8)TODO)
+#define UART_UBRR1L_ADDRESS  ((uint8)TODO)
+#define UART_UBRR1H_ADDRESS  ((uint8)TODO)
 #endif
 #if UART_NUMBER_OF_UARTS >= 3
-#define UART_UDR2_ADDRESS    ((uint8)0x00)
-#define UART_UCSR2A_ADDRESS  ((uint8)0x00)
-#define UART_UCSR2B_ADDRESS  ((uint8)0x00)
-#define UART_UCSR2C_ADDRESS  ((uint8)0x00)
-#define UART_UBRR2L_ADDRESS  ((uint8)0x00)
-#define UART_UBRR2H_ADDRESS  ((uint8)0x00)
+#define UART_UDR2_ADDRESS    ((uint8)TODO)
+#define UART_UCSR2A_ADDRESS  ((uint8)TODO)
+#define UART_UCSR2B_ADDRESS  ((uint8)TODO)
+#define UART_UCSR2C_ADDRESS  ((uint8)TODO)
+#define UART_UBRR2L_ADDRESS  ((uint8)TODO)
+#define UART_UBRR2H_ADDRESS  ((uint8)TODO)
 #endif
 #if UART_NUMBER_OF_UARTS >= 4
-#define UART_UDR3_ADDRESS    ((uint8)0x00)
-#define UART_UCSR3A_ADDRESS  ((uint8)0x00)
-#define UART_UCSR3B_ADDRESS  ((uint8)0x00)
-#define UART_UCSR3C_ADDRESS  ((uint8)0x00)
-#define UART_UBRR3L_ADDRESS  ((uint8)0x00)
-#define UART_UBRR3H_ADDRESS  ((uint8)0x00)
+#define UART_UDR3_ADDRESS    ((uint8)TODO)
+#define UART_UCSR3A_ADDRESS  ((uint8)TODO)
+#define UART_UCSR3B_ADDRESS  ((uint8)TODO)
+#define UART_UCSR3C_ADDRESS  ((uint8)TODO)
+#define UART_UBRR3L_ADDRESS  ((uint8)TODO)
+#define UART_UBRR3H_ADDRESS  ((uint8)TODO)
 #endif
 
 
