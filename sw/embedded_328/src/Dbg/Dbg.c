@@ -35,9 +35,11 @@ static void Dbg_HexToString(uint8* str, uint8 len, uint8 val)
 void Dbg_ReadRegister(uint8 UartHwUnit, uint8 str[], uint8 address)
 {
     uint8 registerString[8];
-    uint8 registerValue;
-    registerValue = (*((uint8*)address));
-
+    uint8 registerValue = 0;
+    if(address != NULL)
+    {
+        registerValue = (*((uint8*)address));
+    }
     Dbg_HexToString(registerString, 2, registerValue);
     Uart_WriteString(UartHwUnit, "Dbg_ReadRegister: ");
     Uart_WriteString(UartHwUnit, str);

@@ -111,12 +111,11 @@ void          Os_Init(void);                  //initialisieren der datenstruktur
 void          Os_Idle(void);
 //void          Os_TimerInit(void);            //system timer initialisieren
 void          Os_Start(void);                    //start der hoechstprioren ready task, notfalls idle
-uint8         Os_GetTimer8(void);             //systemzeit 1000Hz in 8 Bit
-uint16        Os_GetTimer16(void);            //systemzeit 1000Hz in 16 Bit
+uint32         Os_GetTimer32(void);             //systemzeit 1000Hz in 8 Bit
 Os_TaskIdType Os_GetTaskId(void);                //holen der eigenen task id
 void          Os_SetReady(Os_TaskIdType TaskId);     //task fuer bereit erklaeren
 void          Os_SetSuspended(Os_TaskIdType TaskId); //task suspendieren
-void          Os_WaitUntil(uint8 then);   //warte auf den zeitpunkt
+void          Os_WaitUntil(uint32 then);   //warte auf den zeitpunkt
 void          Os_SleepMs(uint16 ms);       //warte eine gewisse zeit
 void          Os_GetSema(Os_SemaphoreType semaid);  //Warten bis Semaphore frei ist und danach besetzen
 void          Os_FreeSema(Os_SemaphoreType semaid);

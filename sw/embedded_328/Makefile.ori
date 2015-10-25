@@ -16,22 +16,26 @@ FORMAT = ihex
 TARGET = main
 
 SRC = src/$(TARGET).c
+SRC += src/Os/Os_Kernel.c 
+SRC += src/Os/Os_Idle.c
+SRC += src/Os/Os_Memory.c
+SRC += src/Os/Os_Message.c
+SRC += src/Os/Os_Scheduler.c
+SRC += src/Os/Os_Semaphore.c
+SRC += src/Os/Os_TaskControl.c
 SRC += src/Uart/Uart.c  
 SRC += src/Uart/Uart_Lcfg.c  
-SRC += src/Gpio/Gpio.c
-SRC += src/Gpio/Gpio_Lcfg.c 
-SRC += src/Spi/Spi.c
-SRC += src/Spi/Spi_Lcfg.c
-SRC += src/Adc/Adc.c
-SRC += src/Adc/Adc_Lcfg.c
+#SRC += src/Gpio/Gpio.c
+#SRC += src/Gpio/Gpio_Lcfg.c 
+#SRC += src/Spi/Spi.c
+#SRC += src/Spi/Spi_Lcfg.c
+#SRC += src/Adc/Adc.c
+#SRC += src/Adc/Adc_Lcfg.c
 #SRC += src/Ssd1306/Ssd1306.c
 #SRC += src/Ssd1306/Ssd1306_Lcfg.c
 SRC += src/Dbg/Dbg.c
 
-
-LIBSRC =  src/Os/idle.c src/Os/kernel.c src/Os/memory.c src/Os/message.c src/Os/scheduler.c src/Os/semaphore.c src/Os/task_control.c
-
-INC = -I./inc -I./src/Os/include -I./src/Uart -I./src/Spi -I./src/Ssd1603 -I./src/Adc -I./src/Gpio -I./src/Dbg
+INC = -I./inc -I./src/Os -I./src/Uart -I./src/Spi -I./src/Ssd1603 -I./src/Adc -I./src/Gpio -I./src/Dbg
 
 ASRC =
 OPT = s
@@ -72,10 +76,10 @@ CFLAGS = $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CSTANDARD) $(CEXTRA)
 #Additional libraries.
 
 # Minimalistic printf version
-PRINTF_LIB_MIN = -Wl,-u,vfprintf -lprintf_min
+#PRINTF_LIB_MIN = -Wl,-u,vfprintf -lprintf_min
 
 # Floating point printf version (requires MATH_LIB = -lm below)
-#PRINTF_LIB_FLOAT = -Wl,-u,vfprintf -lprintf_flt
+PRINTF_LIB_FLOAT = -Wl,-u,vfprintf -lprintf_flt
 
 PRINTF_LIB =$(PRINTF_LIB_FLOAT)
 
@@ -108,9 +112,9 @@ LDFLAGS = $(EXTMEMOPTS) $(LDMAP) $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # Programming support using avrdude. Settings and variables.
 
 #AVRDUDE_PROGRAMMER = usbasp
-AVRDUDE_PORT = /dev/ttyACM0
+AVRDUDE_PORT = /dev/ttyUSB0
 
-AVRDUDE_PROGRAMMER = stk500v2
+AVRDUDE_PROGRAMMER = arduino
 #AVRDUDE_PORT = /dev/ttyUSB0
 AVRDUDE_BAUD = 57600
 
@@ -150,7 +154,7 @@ DOXYGEN_CONFIG = ../doc/doxygen/doxyfile.conf
 DOXYGEN_OUTPUT_DIR = ../doc/doxygen/html
 
 # Define all object files.
-OBJ = $(SRC:.c=.o)  $(LIBSRC:%.c=%.o) $(ASRC:.S=.o)
+OBJ = $(SRC:.c=.o) $(ASRC:.S=.o)
 
 # Define all listing files.
 LST = $(ASRC:.S=.lst) $(SRC:.c=.lst)
@@ -175,8 +179,8 @@ sym: $(TARGET).sym
 
 # Program the device.
 program: $(TARGET).hex $(TARGET).eep
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
-#	/data/programme/arduino-1.6.5/hardware/tools/avr/bin/avrdude -C/data/programme/arduino-1.6.5/hardware/tools/avr/etc/avrdude.conf -v -patmega328p -carduino -P/dev/ttyUSB0 -b57600 -D -Uflash:w:main.hex:i
+#$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
+	/data/programme/arduino-1.6.5/hardware/tools/avr/bin/avrdude -C/data/programme/arduino-1.6.5/hardware/tools/avr/etc/avrdude.conf -v -patmega328p -carduino -P/dev/ttyUSB0 -b57600 -D -Uflash:w:main.hex:i
 
 
 

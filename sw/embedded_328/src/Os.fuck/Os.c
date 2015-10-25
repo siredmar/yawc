@@ -21,6 +21,7 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
+#include "Dbg.h"
 
 static void Os_TimerInit(void);
 
@@ -61,6 +62,7 @@ void Os_Init(void)
     Os_TaskIdType task;
 
     Os_TaskConfig = (Os_TaskConfigType*) Os_GetLcfgData();
+
 
     for(taskId = 0; taskId < OS_MAX_NUMBER_OF_TASKS + 1; taskId++)
     {
@@ -138,6 +140,7 @@ void Os_Init(void)
         Os_StackPointer[taskId] = &Os_Stack[taskId][OS_STACKSIZE-40];
     }
     Os_SemaphoreInit();
+    Os_TimerInit();
 }
 
 
@@ -156,13 +159,13 @@ void  __attribute__ ((optimize("O2"))) Os_Idle(void)
     }                     //rjmp = 2clocks
 #else
     while(1)
-{
-        set_sleep_mode(SLEEP_MODE_IDLE);
-        sleep_enable();
-        sei();
-        oIDLE(1);
-        sleep_cpu();
-        sleep_disable();
+    {
+//        set_sleep_mode(SLEEP_MODE_IDLE);
+//        sleep_enable();
+//        sei();
+//        oIDLE(1);
+//        sleep_cpu();
+//        sleep_disable();
     }
 #endif
 }
@@ -270,17 +273,23 @@ void Os_Start(void)
     if(TaskReadyList)
     {
         Os_CurrentRunningTask = TaskReadyList->TaskId;
+        Dbg_ReadRegister(UART_HWUNIT_0, "Os_CurrentRunningTask = TaskReadyList->TaskId " , &Os_CurrentRunningTask);
     }
     else
     {
         Os_ErrorHook(OS_SYS_NOTASK);
     }
 
-    Os_SystemStarted = 1;
-    Os_PushPopStackPointer = Os_StackPointer[Os_CurrentRunningTask];
+    Dbg_ReadRegister(UART_HWUNIT_0, "continued... 1. " , NULL);
 
+    Os_SystemStarted = 1;
+    Dbg_ReadRegister(UART_HWUNIT_0, "continued... 2. " , NULL);
+    Os_PushPopStackPointer = Os_StackPointer[Os_CurrentRunningTask];
+    Dbg_ReadRegister(UART_HWUNIT_0, "continued... 3. " , NULL);
     Os_PopStack();
+    Dbg_ReadRegister(UART_HWUNIT_0, "continued... 4. " , NULL);
     asm volatile("ret");
+    Dbg_ReadRegister(UART_HWUNIT_0, "continued... 5. " , NULL);
 
     /* This code should never been reached if control structures are alright */
     Os_ErrorHook(OS_SYS_UNKNOWN);
@@ -504,22 +513,14 @@ void Os_SemaphoreInit(void)
     }
 }
 
-uint8 Os_GetTimer8(void)
+uint32 Os_GetTimer32(void)
 { //256ms bis overflow
-    return Os_TimerStruct.timer8[0];
+    return Os_TimerStruct.timer32;
 }
 
-uint16 Os_GetTimer16(void)
-{ //wenn 256ms nicht reichen
-    register uint16 val;
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-    val = Os_TimerStruct.timer16[0];
-    return val;
-}
-
-void Os_WaitUntil(uint8 then)
+void Os_WaitUntil(uint32 then)
 {
-    Os_SuspendAndWait(then - Os_GetTimer8());
+    Os_SuspendAndWait(then - Os_GetTimer32());
 }
 
 //setzen der prioritaet fuer eine task
@@ -551,16 +552,9 @@ __inline__ void __attribute__ ((always_inline)) Os_Timertick(void)
 
     oIDLE(0);
 
-    /* TODO: Dangerous? Won't increment if Os_Ticks >= 65535 */
-//    if(Os_Ticks < UINT_MAX)
-//    {
-    Os_Ticks++;
-//    }
+    Os_TimerStruct.timer32 = Os_Ticks++;
 
-    ticktimer  =  (0xFFFF0000 & (Os_TimerStruct.timer16[1] << 8)) && (Os_TimerStruct.timer16[0] & 0xFFFF);
-    ticktimer++;
-    Os_TimerStruct.timer16[0] = ticktimer & 0xFFFF;
-    Os_TimerStruct.timer16[1] = (ticktimer >> 8) & 0xFFFF;
+
     register Os_TaskControlBlockType *p = Os_TaskControlBlock;
     //timer service
     for(register uint8 n = 0; n < OS_MAX_NUMBER_OF_TASKS + 1; n++)
@@ -599,7 +593,7 @@ __inline__ void __attribute__ ((always_inline)) Os_Timertick(void)
 
 ISR(TIMER0_OVF_vect)
 { //1kHz timer
-    TCNT0 = (uint8)(-1*OS_TIMER_PRELOAD);
+    TCNT0 = (uint8)(OS_TIMER_PRELOAD);
     Os_Timertick();
 }
 
@@ -607,7 +601,7 @@ static void Os_TimerInit(void)
 {
     TCCR0B = /*(1 << CS12)|*/(1 << CS01)|(1 << CS00); //prescaler CLK/64
     TIMSK0 |= (1 << TOIE0);
-    TCNT0 = (uint8)(-1*OS_TIMER_PRELOAD);
+    TCNT0 = (uint8)(OS_TIMER_PRELOAD);
 }
 
 

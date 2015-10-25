@@ -17,22 +17,22 @@
 void UartHelloTask(void);
 void UartWorldTask(void);
 
-const Os_TaskConfigType Os_LcfgTaskConfig[OS_MAX_NUMBER_OF_TASKS] =
+volatile const Os_TaskConfigType Os_LcfgTaskConfig[OS_MAX_NUMBER_OF_TASKS] =
 {
         /* Id, Handler, prio, parameter0, parameter1 */
         /* Task 1 */
         {
                 UartHelloTask,
-                10,
+                20,
                 0,
-                0
+                ""
         },
         /* Task 2 */
         {
                 UartWorldTask,
                 10,
                 0,
-                0
+                ""
         },
 //        /* Task 3 */
 //        {

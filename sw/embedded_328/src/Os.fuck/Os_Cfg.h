@@ -19,13 +19,13 @@
 #include <Std_Types.h>
 
 
-#if TARGET_CPU == ATMEGA2560
+#if TARGET_CPU == ATMEGA328
 #include <avr/io.h>
 #include <util/atomic.h>
 #include <avr/interrupt.h>
 #endif
 
-#if TARGET_CPU == ATMEGA2560
+#if TARGET_CPU == ATMEGA328
 #define F_CPU       (16000000ul)
 #endif
 
@@ -33,13 +33,14 @@
 
 #define OS_FREQUENCY_HZ            (1000u)         //system tick rate in HZ
 
-#define TARGET_CPU ATMEGA2560
+#define TARGET_CPU ATMEGA328
 
 #define OS_MAX_NUMBER_OF_TASKS    (2u)  //anzahl definierter prozesse
 
+//#define OS_STACKSIZE     (256u)         //stack in byte bei 8 bit bzw. word bei 32 bit maschinen
+//#define OS_STACKLOWMARK  (240u)         //wenn debug aktiviert wird auf unterschreitung dieser marke geprueft
 #define OS_STACKSIZE     (256u)         //stack in byte bei 8 bit bzw. word bei 32 bit maschinen
 #define OS_STACKLOWMARK  (240u)         //wenn debug aktiviert wird auf unterschreitung dieser marke geprueft
-
 
 //#define IDLELED                        //led in idle task ansteuern oder nichts machen
 
@@ -48,7 +49,7 @@
 #define OS_MAX_OVERLOAD     (0u)         //und dies ist die max. erlaubte zahl an overload phasen bevor deadbeef() aufgerufen wird
 
 
-#if TARGET_CPU == ATMEGA2560
+#if TARGET_CPU == ATMEGA328
 #define OS_TIMER_PRESCALER       64ul         //verteiler timer clock
 #define OS_TIMER_PRELOAD ( F_CPU/( OS_TIMER_PRESCALER*OS_FREQUENCY_HZ ) )
 #if (OS_TIMER_PRELOAD>254) /* weil es ein 8 bit timer ist */
@@ -56,7 +57,7 @@
 #endif
 #endif
 
-#if TARGET_CPU == ATMEGA2560
+#if TARGET_CPU == ATMEGA328
 #ifdef IDLELED
 #ifndef sbi
 #define sbi(port,nr) (port|=_BV(nr))
