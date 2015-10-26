@@ -57,7 +57,7 @@ static const Adc_ConfigType Adc_initialConfiguration_s =
 
 /* ------------------------------------ GLOBAL FUNCTIONS ---------------------------------------- */
 
-const void *Adc_getLcfgData(void)
+const void *Adc_GetLcfgData(void)
 {
    return ((const void*) &Adc_initialConfiguration_s);
 }

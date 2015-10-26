@@ -24,14 +24,13 @@ SRC += src/Spi/Spi.c
 SRC += src/Spi/Spi_Lcfg.c
 SRC += src/Adc/Adc.c
 SRC += src/Adc/Adc_Lcfg.c
-#SRC += src/Ssd1306/Ssd1306.c
-#SRC += src/Ssd1306/Ssd1306_Lcfg.c
+SRC += src/Tools/Tools.c
+SRC += src/Ssd1306/Ssd1306.c
 SRC += src/Dbg/Dbg.c
-
 
 LIBSRC =  src/Os/idle.c src/Os/kernel.c src/Os/memory.c src/Os/message.c src/Os/scheduler.c src/Os/semaphore.c src/Os/task_control.c
 
-INC = -I./inc -I./src/Os/include -I./src/Uart -I./src/Spi -I./src/Ssd1603 -I./src/Adc -I./src/Gpio -I./src/Dbg
+INC = -I./inc -I./src/Os/include -I./src/Uart -I./src/Spi -I./src/Ssd1306 -I./src/Adc -I./src/Gpio -I./src/Dbg -I./src/Tools
 
 ASRC =
 OPT = s

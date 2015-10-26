@@ -9,7 +9,7 @@
 #include "Gpio_Lcfg.h"
 #include "Std_Types.h"
 
-static const volatile Gpio_ConfigType *localConfig;
+static const volatile Gpio_ConfigType *LocalConfig;
 
 volatile const Gpio_RegisterAddresstype Gpio_RegisterAdress_as[MAX_NUM_OF_PORTS] =
 {
@@ -40,15 +40,15 @@ void Gpio_Init()
    Gpio_PinType pin_e;
    uint16 channel_ui16;
 
-   localConfig = (const Gpio_ConfigType*) Gpio_getlcfgdata();
+   LocalConfig = (const Gpio_ConfigType*) Gpio_GetLcfgData();
 
    for(forCounter1_ui8 = 0; forCounter1_ui8 < MAX_NUM_OF_PORTS * MAX_NUM_OF_PINS; forCounter1_ui8++)
    {
-      if(localConfig->Gpio_PinConfig[forCounter1_ui8].Gpio_ConfireAllowed == GPIO_TRUE)
+      if(LocalConfig->Gpio_PinConfig[forCounter1_ui8].Gpio_ConfireAllowed == GPIO_TRUE)
       {
-         Gpio_LocalPinInOut = localConfig->Gpio_PinConfig[forCounter1_ui8].Gpio_PinInOut;
-         Gpio_LocalPinInitial = localConfig->Gpio_PinConfig[forCounter1_ui8].Gpio_PinInitial;
-         channel_ui16 = localConfig->Gpio_PinConfig[forCounter1_ui8].Gpio_Pin;
+         Gpio_LocalPinInOut = LocalConfig->Gpio_PinConfig[forCounter1_ui8].Gpio_PinInOut;
+         Gpio_LocalPinInitial = LocalConfig->Gpio_PinConfig[forCounter1_ui8].Gpio_PinInitial;
+         channel_ui16 = LocalConfig->Gpio_PinConfig[forCounter1_ui8].Gpio_Pin;
          port_e = (uint8)(channel_ui16 >> 8);
          pin_e = (uint8)((channel_ui16 & 0xFF));
 

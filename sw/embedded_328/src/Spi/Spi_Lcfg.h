@@ -5,6 +5,6 @@
 
 
 
-const void *Spi_getlcfgdata(void);
+const void *Spi_GetLcfgData(void);
 
 #endif /* SPI_LCFG_H_ */

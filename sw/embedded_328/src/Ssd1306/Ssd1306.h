@@ -1,183 +1,96 @@
 /**
-*  COPYRIGHT: Armin Schlegel
-*  \file tft.h
-*  \brief Display Graphic Driver
-*
-*  This header file contains all tft specific datatypes and defines.
-*
-*******************************************************************************/
-#ifndef TFT_H
-#define TFT_H
+ * \file display.h
+ * \brief This file contains the interface of the display module.
+ *
+ * Copyright (C) 2011  Armin Schlegel, Christian Eismann
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-/* ***************************** includes < > ******************************* */
+#ifndef _DISPLAY_H_
+#define _DISPLAY_H_
 
-/* ***************************** includes " " ******************************* */
-#include "../Ssd1306/Ssd1306_Cfg.h"
-#include "../Ssd1306/Ssd1306_Lcfg.h"
-#include "Std_Types.h"
+/*--- Includes -------------------------------------------------------*/
 
+#include <stdio.h>
+#include <inttypes.h>
 
-/* Function definitions */
-#define Ssd1306_selectRS()             Gpio_WriteChannel(TFT_RS_PIN_UI8, STD_HIGH)
-#define Ssd1306_deSelectRS()           Gpio_WriteChannel(TFT_RS_PIN_UI8, STD_LOW)
+/* F_CPU has to be defined before including util/delay.h */
+#include <util/delay.h>
+#include <inttypes.h>
+#include <avr/io.h>
+#include <avr/pgmspace.h>
 
-#define Ssd1306_selectCS()             Gpio_WriteChannel(TFT_CS_PIN_UI8, STD_HIGH)
-#define Ssd1306_deSelectCS()           Gpio_WriteChannel(TFT_CS_PIN_UI8, STD_LOW)
-
-#define Ssd1306_selectWR()             Gpio_WriteChannel(TFT_WR_PIN_UI8, STD_HIGH)
-#define Ssd1306_deSelectWR()           Gpio_WriteChannel(TFT_WR_PIN_UI8, STD_LOW)
-
-#define Ssd1306_selectBacklight()      Gpio_WriteChannel(TFT_BACKLIGHT_PIN_UI8, STD_HIGH)
-#define Ssd1306_deSelectBacklight()    Gpio_WriteChannel(TFT_BACKLIGHT_PIN_UI8, STD_LOW)
-
-#define Ssd1306_selectReset()          Gpio_WriteChannel(TFT_RESET_PIN_UI8, STD_HIGH)
-#define Ssd1306_deSelectReset()        Gpio_WriteChannel(TFT_RESET_PIN_UI8, STD_LOW)
-
-
-
-/* ***************************** typedefs *********************************** */
-typedef uint16 Ssd1306_ColorType;
-
-/* ***************************** enums ************************************** */
-typedef enum
-{
-   WHITE       = (0xFFFFU),
-   BLACK       = (0x0000U),
-   BLUE        = (0x001FU),
-   BRED        = (0xF81FU),
-   GRED 		   = (0xFFE0U),
-   GBLUE		   = (0x07FFU),
-   RED         = (0xF800U),
-   MAGENTA     = (0xF81FU),
-   GREEN       = (0x07E0U),
-   CYAN        = (0x7FFFU),
-   YELLOW      = (0xFFE0U),
-   BROWN 		= (0xBC40U),
-   BRRED 		= (0xFC07U),
-   GRAY  		= (0x8430U),
-}Ssd1306_stdColorsType;
-
-/* ***************************** macros ************************************* */
-/* ***************************** structs ************************************ */
-
-/**
-*  \brief init sequence description type
-*
-*  Struct for postbuild init sequence description
-*/
-typedef struct
-{
-   uint16 Ssd1306_registerAddress_ui16;
-   uint16 Ssd1306_registerValue_ui16;
-   uint16 Ssd1306_waitTimeAfterSend_ui16;
-   uint16 Ssd1306_registerParameters_ui16;
-}Ssd1306_initSequenceType;
+#include "Spi.h"
+#include "Tools.h"
 
 
-/**
-*  \brief init container
-*
-*  This type of data structure containing the initialization data for the TFT driver
-*/
-typedef struct
-{
-   Ssd1306_initSequenceType const    *Ssd1306_initSequence_ps;
-   uint16                         Ssd1306_numberOfInitSeq_ui16;
-}Ssd1306_configType;
-
-/* ***************************** global data ******************************** */
-extern const Ssd1306_configType Ssd1306_initialConfigTft_s;
+/*--- Macros ---------------------------------------------------------*/
+#define SSD1306_DC_PIN                      (GPIO_CHANNEL_PC0)
+#define SSD1306_CS_PIN                      (GPIO_CHANNEL_PC1)
 
 
-/* ***************************** modul global prototypes ******************** */
-/* ***************************** global functions *************************** */
-/*
-*  \brief Function initialize the Display Graphic Driver and the tft Display
-*
-*  \param [in]  initSequence = Pointer to init Sequence
-*  \param [out] ---
-*  \return      ---
-*/
-Std_ReturnType Ssd1306_init
-(
-	const Ssd1306_configType *ConfigPtr
-);
+#define PAGES (7u)
+#define LINES (8u)
+#define COLUMS (128u)
 
 
+#define SSD1306_DEFAULT_ADDRESS     ((uint8)0x78)
+#define SSD1306_SETCONTRAST         ((uint8)0x81)
+#define SSD1306_DISPLAYALLON_RESUME ((uint8)0xA4)
+#define SSD1306_DISPLAYALLON        ((uint8)0xA5)
+#define SSD1306_NORMALDISPLAY       ((uint8)0xA6)
+#define SSD1306_INVERTDISPLAY       ((uint8)0xA7)
+#define SSD1306_DISPLAYOFF          ((uint8)0xAE)
+#define SSD1306_DISPLAYON           ((uint8)0xAF)
+#define SSD1306_SETDISPLAYOFFSET    ((uint8)0xD3)
+#define SSD1306_SETCOMPINS          ((uint8)0xDA)
+#define SSD1306_SETVCOMDETECT       ((uint8)0xDB)
+#define SSD1306_SETDISPLAYCLOCKDIV  ((uint8)0xD5)
+#define SSD1306_SETPRECHARGE        ((uint8)0xD9)
+#define SSD1306_SETMULTIPLEX        ((uint8)0xA8)
+#define SSD1306_SETLOWCOLUMN        ((uint8)0x00)
+#define SSD1306_SETHIGHCOLUMN       ((uint8)0x10)
+#define SSD1306_SETSTARTLINE        ((uint8)0x40)
+#define SSD1306_MEMORYMODE          ((uint8)0x20)
+#define SSD1306_COLUMNADDR          ((uint8)0x21)
+#define SSD1306_PAGEADDR            ((uint8)0x22)
+#define SSD1306_COMSCANINC          ((uint8)0xC0)
+#define SSD1306_COMSCANDEC          ((uint8)0xC8)
+#define SSD1306_SEGREMAP            ((uint8)0xA0)
+#define SSD1306_CHARGEPUMP          ((uint8)0x8D)
+#define SSD1306_SWITCHCAPVCC        ((uint8)0x2)
+#define SSD1306_NOP                 ((uint8)0xE3)
 
-/*
-*  \brief Function clears whole screen with one color
-*
-*  \param [in]  color_ui16 =  Color Value
-*  \param [out] ---
-*  \return      ---
-*/
-Std_ReturnType Ssd1306_clearScreen
-(
-   Ssd1306_ColorType color_ui16
-);
+#define DISP_WIDTH   (128u)
+#define DISP_HEIGHT  (64u)
+#define PIXEL_ON (1u)
+#define PIXEL_OFF (0u)
+#define FONT_WIDTH   (5u)
+#define FONT_HEIGHT  (7u)
 
-//void Ssd1306_drawStart();
-//
-//void Ssd1306_drawStop();
+/*--- External Function Prototypes -----------------------------------*/
 
-/*
-*  \brief Function draw a filled Rectangle at x/y position
-*
-*  \param [in]  xStartPosition_ui16 = X Start position of rectangle
-*  \param [in]  yStartPosition_ui16 = Y Start position of rectangle
-*  \param [in]  rectangleWidth_ui16 = Width of rectangle in pixel
-*  \param [in]  rectangleHeight_ui16 = Height of rectangle in pixel
-*  \param [in]  rectangleColor_ui16 = Color of rectangle
+void Ssd1306_Init(void);
+void Ssd1306_ClearScreen(void);
+void Ssd1306_ClearRam(void);
+void Ssd1306_PutPixel(uint8 x, uint8 y, int pixel_status);
+void Ssd1306_SendFrame(void);
+void Ssd1306_WriteString(uint16 x, uint16 y, const sint8 *str);
+void Ssd1306_DrawBmpFromFlash(uint8 x, uint8 y, uint8 *addr);
+void Ssd1306_DrawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
+void Ssd1306_DrawHorizontalLine(uint8_t x0, uint8_t y0, uint8_t length, uint8_t pixel_status);
 
-*  \param [out] ---
-*  \return      E_OK = Rectangle draw successfull
-*               E_NOT_OK = Rectangle draw not successfull
-*/
-Std_ReturnType Ssd1306_drawPixel
-(
-   uint16 xPosition_ui16,
-   uint16 yPosition_ui16,
-   Ssd1306_ColorType rectangleColor_ui16
-);
+#endif /* #ifndef _DISPLAY_H_ */
 
-/*
-*  \brief Function draw a filled Rectangle at x/y position
-*
-*  \param [in]  xStartPosition_ui16 = X Start position of rectangle
-*  \param [in]  yStartPosition_ui16 = Y Start position of rectangle
-*  \param [in]  rectangleWidth_ui16 = Width of rectangle in pixel
-*  \param [in]  rectangleHeight_ui16 = Height of rectangle in pixel
-*  \param [in]  rectangleColor_ui16 = Color of rectangle
-
-*  \param [out] ---
-*  \return      E_OK = Rectangle draw successfull
-*               E_NOT_OK = Rectangle draw not successfull
-*/
-Std_ReturnType Ssd1306_drawRectangle
-(
-   uint16 xPosition_ui16,
-   uint16 yPosition_ui16,
-   uint16 rectangleWidth_ui16,
-   uint16 rectangleHeight_ui16,
-   Ssd1306_ColorType rectangleColor_ui16
-);
-
-void Ssd1306_setWindow
-(
-   uint16 startPositionX_ui16,
-   uint16 startPositionY_ui16,
-   uint16 endPositionX_ui16,
-   uint16 endPositionY_ui16
-);
-
-void Ssd1306_sendPixelData
-(
-   uint16 data_ui16
-);
-
-void Ssd1306_drawStart();
-
-void Ssd1306_drawStop();
-
-#endif

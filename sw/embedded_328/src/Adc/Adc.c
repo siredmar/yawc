@@ -38,7 +38,7 @@
 
 static Adc_ConfigType  adcConfig;
 
-static volatile const Adc_RegisterAddressType adcRegisterAdresses_as =
+static volatile const Adc_RegisterAddressType Adc_RegisterAdresses_as =
 {
         (uint8*) ADC_ADCL_ADDRESS,
         (uint8*) ADC_ADCH_ADDRESS,
@@ -60,7 +60,7 @@ void Adc_Init(const Adc_ConfigType *configPtr)
 {
     if (configPtr == ADC_CALLBACK_NULL_PTR)
     {
-        configPtr = (const Adc_ConfigType*)Adc_getLcfgData();
+        configPtr = (const Adc_ConfigType*)Adc_GetLcfgData();
     }
 
     adcConfig.enableState_e         = (Adc_EnableStateType_e)         (0x01 & configPtr->enableState_e);
@@ -74,12 +74,12 @@ void Adc_Init(const Adc_ConfigType *configPtr)
     adcConfig.averageControl_e      = (Adc_AverageType_e)             (0x07 & configPtr->averageControl_e);
 
     /* enable ADC and set prescaler */
-    *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) = \
+    *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) = \
             (adcConfig.enableState_e      << ADC_ADEN) | \
             (adcConfig.prescalerControl_e << ADC_ADPS0);
 
     /* selecting voltage reference, result alignment and ADC channel */
-    *(adcRegisterAdresses_as.Adc_MuxRegister_pui8) =  \
+    *(Adc_RegisterAdresses_as.Adc_MuxRegister_pui8) =  \
             (adcConfig.referenceControl_e << ADC_REFS0) | \
             (adcConfig.defaultChannel_e   << ADC_MUX0);
 
@@ -88,26 +88,26 @@ void Adc_Init(const Adc_ConfigType *configPtr)
 
 /* ---------------------------------------------------------------------------------------------- */
     /* dummy read out to discard the invalid first conversion value */
-    *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADSC);
-    while (!(*(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) & (1 << ADC_ADIF)));
-    *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADIF);
+    *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADSC);
+    while (!(*(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) & (1 << ADC_ADIF)));
+    *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADIF);
 /* ---------------------------------------------------------------------------------------------- */
 
     /* set the trigger sources if needed */
     if (adcConfig.triggerControl_e != ADC_TRIGGER_SINGLE_SHOT)
     {
-        *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterB_pui8)  = (adcConfig.triggerControl_e << ADC_ADTS0);
-        *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADATE);
+        *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterB_pui8)  = (adcConfig.triggerControl_e << ADC_ADTS0);
+        *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADATE);
     }
 
     /* configure adc interrupt */
-    *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |=  (adcConfig.interruptState_e << ADC_ADIE);
+    *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |=  (adcConfig.interruptState_e << ADC_ADIE);
 }
 
 void Adc_DisableDigitalInput(const Adc_ChannelType_e channels)
 {
     /* disable digital system of given port pin */
-    *(adcRegisterAdresses_as.Adc_DigitalInputDisableRegister_pui8) = channels;
+    *(Adc_RegisterAdresses_as.Adc_DigitalInputDisableRegister_pui8) = channels;
     adcConfig.digitalInputDisable_e = channels;
 }
 
@@ -116,25 +116,25 @@ void Adc_SetChannel(const Adc_ChannelType_e channel)
     uint8 autoTriggerFlag = 0;
 
     /* disable auto trigger if running */
-    if (*(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) & (1 << ADC_ADATE))
+    if (*(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) & (1 << ADC_ADATE))
     {
         autoTriggerFlag = 1;
-        *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) &= ~(1 << ADC_ADATE);
+        *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) &= ~(1 << ADC_ADATE);
     }
 
     /* wait if a conversion is in progress */
-    while(*(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) & (1 << ADC_ADSC));
+    while(*(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) & (1 << ADC_ADSC));
 
     /* save channel in local config */
     adcConfig.defaultChannel_e = (Adc_ChannelType_e) (0x07 & channel);
 
     /* clear and set channel in register */
-    *(adcRegisterAdresses_as.Adc_MuxRegister_pui8) &= 0xE0;
-    *(adcRegisterAdresses_as.Adc_MuxRegister_pui8) |= (adcConfig.defaultChannel_e << ADC_MUX0);
+    *(Adc_RegisterAdresses_as.Adc_MuxRegister_pui8) &= 0xE0;
+    *(Adc_RegisterAdresses_as.Adc_MuxRegister_pui8) |= (adcConfig.defaultChannel_e << ADC_MUX0);
 
     /* enable auto trigger if previously set */
     if (autoTriggerFlag != 0) {
-        *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADATE);
+        *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADATE);
     }
 }
 
@@ -143,14 +143,14 @@ uint8 Adc_Read8bit(void)
     uint16 result_ui16 = 0;
 
     /* start conversion */
-    *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADSC);
+    *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADSC);
 
     if(adcConfig.interruptState_e == ADC_INTERRUPT_DISABLED)
     {
         /* wait for end of conversion, fetch adc value and clear the flag */
-        while (!(*(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) & (1 << ADC_ADIF)));
+        while (!(*(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) & (1 << ADC_ADIF)));
         result_ui16 = Adc_GetResult8bit();
-        *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADIF);
+        *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADIF);
     }
     else
     {
@@ -165,14 +165,14 @@ uint16 Adc_Read10bit(void)
     uint16 result_ui16 = 0;
 
     /* start conversion */
-    *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADSC);
+    *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADSC);
 
     if(adcConfig.interruptState_e == ADC_INTERRUPT_DISABLED)
     {
         /* wait for end of conversion, fetch adc value and clear the flag */
-        while (!(*(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) & (1 << ADC_ADIF)));
+        while (!(*(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) & (1 << ADC_ADIF)));
         result_ui16 = Adc_GetResult10bit();
-        *(adcRegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADIF);
+        *(Adc_RegisterAdresses_as.Adc_ControlAndStatusRegisterA_pui8) |= (1 << ADC_ADIF);
     }
     else
     {
@@ -222,12 +222,12 @@ uint16 Adc_Read10bitAverage(void)
 
 static uint16 Adc_GetResult8bit(void)
 {
-    return *(volatile uint16 *)(adcRegisterAdresses_as.Adc_DataRegisterLow_pui8);
+    return *(volatile uint16 *)(Adc_RegisterAdresses_as.Adc_DataRegisterLow_pui8);
 }
 
 static uint16 Adc_GetResult10bit(void)
 {
-    return *(volatile uint16 *)(adcRegisterAdresses_as.Adc_DataRegisterLow_pui8);
+    return *(volatile uint16 *)(Adc_RegisterAdresses_as.Adc_DataRegisterLow_pui8);
 }
 
 

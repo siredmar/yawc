@@ -9,43 +9,43 @@
 
 #define SPI_CALLBACK_NULL_PTR ((void*)0)
 
-typedef void (*Spi_callbackType)(void);
+typedef void (*Spi_CallbackType)(void);
 
 typedef enum
 {
 	SPI_INTERRUPT_DISABLED = 0U,
 	SPI_INTERRUPT_ENABLED
-}Spi_spiInterruptControlType;
+}Spi_SpiInterruptControlType;
 
 typedef enum
 {
 	SPI_MODULE_DISABLED = 0U,
 	SPI_MODULE_ENABLED
-}Spi_spiEnableControlType;
+}Spi_SpiEnableControlType;
 
 typedef enum
 {
 	SPI_LSB_FIRST = 0U,
 	SPI_MSB_FIRST
-}Spi_spiDataOrderControlType;
+}Spi_SpiDataOrderControlType;
 
 typedef enum
 {
 	SPI_SLAVE_MODE = 0U,
 	SPI_MASTER_MODE
-}Spi_spiMasterSlaveControlType;
+}Spi_SpiMasterSlaveControlType;
 
 typedef enum
 {
 	SPI_CPOL_0 = 0U,
 	SPI_CPOL_1
-}Spi_spiClockPolarityControlType;
+}Spi_SpiClockPolarityControlType;
 
 typedef enum
 {
 	SPI_CPHA_0 = 0U,
 	SPI_CPHA_1
-}Spi_spiDataPhaseControlType;
+}Spi_SpiDataPhaseControlType;
 
 /*
 * CKP: 0, DAP: 0
@@ -96,31 +96,31 @@ typedef enum
 	SPI_CLOCK_PRESCALER_DIV_16,
 	SPI_CLOCK_PRESCALER_DIV_64,
 	SPI_CLOCK_PRESCALER_DIV_128
-}Spi_spiClockPrescalerControlType;
+}Spi_SpiClockPrescalerControlType;
 
 typedef enum
 {
 	SPI_DOUBLE_SPEED_DISABLED = 0U,
 	SPI_DOUBLE_SPEED_ENABLED
-}Spi_spiDoubleSpeedControlType;
+}Spi_SpiDoubleSpeedControlType;
 
 typedef enum
 {
 	SPI_CS_ACTIVE_LOW = 0U,
 	SPI_CS_ACTIVE_HIGH
-}Spi_csActiveLevelControlType;
+}Spi_CsActiveLevelControlType;
 
 typedef struct
 {
-	Spi_spiEnableControlType         Spi_spiControl_e;
-	Spi_spiMasterSlaveControlType    Spi_MasterSlaveControl_e;
-	Spi_spiInterruptControlType      Spi_interruptControl_e;
-	Spi_callbackType                 Spi_callback_pv;
-	Spi_spiDataOrderControlType      Spi_dataOrderControl_e;
-	Spi_spiClockPolarityControlType  Spi_cpol_e;
-	Spi_spiDataPhaseControlType      Spi_cpha_e;
-	Spi_spiClockPrescalerControlType Spi_clockPrescaler_e;
-	Spi_spiDoubleSpeedControlType    Spi_doubleSpeed_e;
+	Spi_SpiEnableControlType         Spi_SpiControl_e;
+	Spi_SpiMasterSlaveControlType    Spi_MasterSlaveControl_e;
+	Spi_SpiInterruptControlType      Spi_InterruptControl_e;
+	Spi_CallbackType                 Spi_Callback_pv;
+	Spi_SpiDataOrderControlType      Spi_DataOrderControl_e;
+	Spi_SpiClockPolarityControlType  Spi_Cpol_e;
+	Spi_SpiDataPhaseControlType      Spi_Cpha_e;
+	Spi_SpiClockPrescalerControlType Spi_ClockPrescaler_e;
+	Spi_SpiDoubleSpeedControlType    Spi_DoubleSpeed_e;
 }Spi_ConfigType;
 
 typedef struct
@@ -131,10 +131,10 @@ typedef struct
 }Spi_RegisterAddressType;
 
 
-void Spi_init(void);
-uint8 Spi_sendData(uint8 data_ui8, Gpio_ChannelType Spi_chipSelect_e, Spi_csActiveLevelControlType Spi_csLevel_e, uint8 start, uint8 stop);
-static void Spi_highCS(Gpio_ChannelType Spi_chipSelect_e);
-static void Spi_lowCS(Gpio_ChannelType Spi_chipSelect_e);
+void Spi_Init(void);
+uint8 Spi_SendData(uint8 data_ui8, Gpio_ChannelType Spi_ChipSelect_e, Spi_CsActiveLevelControlType Spi_CsLevel_e, uint8 start, uint8 stop);
+static void Spi_LowCS(Gpio_ChannelType Spi_ChipSelect_e);
+static void Spi_HighCS(Gpio_ChannelType Spi_ChipSelect_e);
 
 
 #endif

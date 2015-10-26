@@ -7,6 +7,7 @@
 #include <util/delay.h>
 #include "Gpio.h"
 #include "Dbg.h"
+#include "Ssd1306.h"
 
 #include <stdlib.h>
 #include <avr/interrupt.h>   // Interrupts and timers
@@ -24,6 +25,13 @@ void init_user_environment()
 {
 
     Uart_Init();
+    Gpio_Init();
+    Spi_Init();
+    Ssd1306_Init();
+    Ssd1306_ClearScreen();
+    Ssd1306_PutPixel(5, 5, 1);
+    Ssd1306_SendFrame();
+
 
     Uart_WriteString(UART_HWUNIT_0, "System started...\n\r");
     Dbg_ReadRegister(UART_HWUNIT_0, "MCUSR (0x54): ", 0x54);

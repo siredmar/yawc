@@ -1,8 +1,12 @@
 #ifndef PLATFORM_TYPES_H
 #define PLATFORM_TYPES_H
 
+#ifndef NULL
 #define NULL ((void*)(0))
+#endif
+#ifndef NULL_PTR
 #define NULL_PTR ((void*)(0))
+#endif
 
 #define FALSE 			0
 #define TRUE 			1

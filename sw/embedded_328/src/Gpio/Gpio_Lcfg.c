@@ -2,7 +2,7 @@
 
 #include "Gpio.h"
 
-const Gpio_ConfigType Gpio_initialConfiguration_s =
+const Gpio_ConfigType Gpio_InitialConfiguration_s =
 {
         {
                 /* PORT B */
@@ -56,16 +56,16 @@ const Gpio_ConfigType Gpio_initialConfiguration_s =
                 },
 
                 /* PORT C */
-                {
-                        GPIO_FALSE,
+                {       /* Display DC */
+                        GPIO_TRUE,
                         GPIO_CHANNEL_PC0,
-                        GPIO_INPUT,
+                        GPIO_OUTPUT,
                         GPIO_PIN_INITIAL_HIGH
                 },
-                {
-                        GPIO_FALSE,
+                {       /* Display CS */
+                        GPIO_TRUE,
                         GPIO_CHANNEL_PC1,
-                        GPIO_INPUT,
+                        GPIO_OUTPUT,
                         GPIO_PIN_INITIAL_HIGH
                 },
                 {
@@ -155,7 +155,7 @@ const Gpio_ConfigType Gpio_initialConfiguration_s =
 
 
 
-const void *Gpio_getlcfgdata(void)
+const void *Gpio_GetLcfgData(void)
 {
-    return ((const void *) &Gpio_initialConfiguration_s);
+    return ((const void *) &Gpio_InitialConfiguration_s);
 }

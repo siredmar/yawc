@@ -17,17 +17,17 @@
 #define ROTATE 0
 
 #if !ROTATE
-   #define TFT_WIDTH_UI16                   ((uint16)480U)
-   #define TFT_HEIGHT_UI16                  ((uint16)272U)
+   #define TFT_WIDTH_UI16                   ((uint16)128)
+   #define TFT_HEIGHT_UI16                  ((uint16)64U)
 #else
-   #define TFT_WIDTH_UI16                   ((uint16)272U)
-   #define TFT_HEIGHT_UI16                  ((uint16)480U)
+   #define TFT_WIDTH_UI16                   ((uint16)64)
+   #define TFT_HEIGHT_UI16                  ((uint16)128U)
 #endif
 #define TFT_ZERO_X                          ((uint16)0U)
 #define TFT_ZERO_Y                          ((uint16)0U)
-#define TFT_PIXELS_UI32                     ((uint32)130560U)
+#define TFT_PIXELS_UI16                     ((uint16)8192U)
 
-#define TFT_RS_PIN_UI8                      (GPIO_CHANNEL_PB0)
+#define TFT_DC_PIN_UI8                      (GPIO_CHANNEL_PB0)
 #define TFT_WR_PIN_UI8                      (GPIO_CHANNEL_PB0)
 #define TFT_BACKLIGHT_PIN_UI8               (GPIO_CHANNEL_PB0)
 #define TFT_CS_PIN_UI8                      (GPIO_CHANNEL_PB0)
@@ -73,6 +73,34 @@
 #define TFT_ROW_END_ADDR2_REG_ADDR_UI16     ((uint16)0x0000U)
 #define TFT_ROW_END_ADDR1_REG_ADDR_UI16     ((uint16)0x0000U)
 
+
+
+#define SSD1306_DEFAULT_ADDRESS     ((uint8)0x78)
+#define SSD1306_SETCONTRAST         ((uint8)0x81)
+#define SSD1306_DISPLAYALLON_RESUME ((uint8)0xA4)
+#define SSD1306_DISPLAYALLON        ((uint8)0xA5)
+#define SSD1306_NORMALDISPLAY       ((uint8)0xA6)
+#define SSD1306_INVERTDISPLAY       ((uint8)0xA7)
+#define SSD1306_DISPLAYOFF          ((uint8)0xAE)
+#define SSD1306_DISPLAYON           ((uint8)0xAF)
+#define SSD1306_SETDISPLAYOFFSET    ((uint8)0xD3)
+#define SSD1306_SETCOMPINS          ((uint8)0xDA)
+#define SSD1306_SETVCOMDETECT       ((uint8)0xDB)
+#define SSD1306_SETDISPLAYCLOCKDIV  ((uint8)0xD5)
+#define SSD1306_SETPRECHARGE        ((uint8)0xD9)
+#define SSD1306_SETMULTIPLEX        ((uint8)0xA8)
+#define SSD1306_SETLOWCOLUMN        ((uint8)0x00)
+#define SSD1306_SETHIGHCOLUMN       ((uint8)0x10)
+#define SSD1306_SETSTARTLINE        ((uint8)0x40)
+#define SSD1306_MEMORYMODE          ((uint8)0x20)
+#define SSD1306_COLUMNADDR          ((uint8)0x21)
+#define SSD1306_PAGEADDR            ((uint8)0x22)
+#define SSD1306_COMSCANINC          ((uint8)0xC0)
+#define SSD1306_COMSCANDEC          ((uint8)0xC8)
+#define SSD1306_SEGREMAP            ((uint8)0xA0)
+#define SSD1306_CHARGEPUMP          ((uint8)0x8D)
+#define SSD1306_SWITCHCAPVCC        ((uint8)0x2)
+#define SSD1306_NOP                 ((uint8)0xE3)
 /* ***************************** enums ************************************** */
 
 #endif /* TFT_CFG_H */
