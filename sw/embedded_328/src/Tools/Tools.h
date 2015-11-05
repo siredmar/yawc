@@ -29,9 +29,4 @@
 
 /*--- Macros ---------------------------------------------------------*/
 
-//#define nop()  __asm__ __volatile__ ("nop" ::)
-
-char *Tools_StrtokREmpty( char *p_str, const char *p_delim, char **pp_save );
-
 #endif
-

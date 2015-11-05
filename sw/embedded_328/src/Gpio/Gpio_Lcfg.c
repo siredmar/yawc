@@ -57,13 +57,13 @@ const Gpio_ConfigType Gpio_InitialConfiguration_s =
 
                 /* PORT C */
                 {       /* Display DC */
-                        GPIO_TRUE,
+                        GPIO_FALSE,
                         GPIO_CHANNEL_PC0,
                         GPIO_OUTPUT,
                         GPIO_PIN_INITIAL_HIGH
                 },
                 {       /* Display CS */
-                        GPIO_TRUE,
+                        GPIO_FALSE,
                         GPIO_CHANNEL_PC1,
                         GPIO_OUTPUT,
                         GPIO_PIN_INITIAL_HIGH
@@ -81,15 +81,15 @@ const Gpio_ConfigType Gpio_InitialConfiguration_s =
                         GPIO_PIN_INITIAL_HIGH
                 },
                 {
-                        GPIO_FALSE,
+                        GPIO_FALSE,//GPIO_TRUE,
                         GPIO_CHANNEL_PC4,
-                        GPIO_INPUT,
+                        GPIO_OUTPUT,
                         GPIO_PIN_INITIAL_HIGH
                 },
                 {
-                        GPIO_FALSE,
+                        GPIO_FALSE,//GPIO_TRUE,
                         GPIO_CHANNEL_PC5,
-                        GPIO_INPUT,
+                        GPIO_OUTPUT,
                         GPIO_PIN_INITIAL_HIGH
                 },
                 {

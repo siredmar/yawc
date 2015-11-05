@@ -28,16 +28,16 @@
 #define TASK_USE_SLEEP
 
 // undefine to save memory if task anhilate is not needed
-#define TASK_USE_ANHILATE
+//#define TASK_USE_ANHILATE
 
 // undefine to save memory if message queue is not needed
-#define TASK_USE_MESSAGE
+//#define TASK_USE_MESSAGE
 
 // undefine to save memory if semaphore is not needed
-// #define TASK_USE_SEMAPHORE
+ #define TASK_USE_SEMAPHORE
 
 // undefine to save memory if memory management is not needed
-#define TASK_USE_MEM
+//#define TASK_USE_MEM
 
 
 // supported devices
@@ -143,7 +143,7 @@
 //number of tasks in the target system (incl. the idle task)
 
 #ifndef TASKS
-#define TASKS 4
+#define TASKS 3
 #endif
 
 //Stack size for each task in byte. 
@@ -151,7 +151,7 @@
 //Often 64 or 96 is a good idea.
 
 #ifndef STACK_SIZE
-#define STACK_SIZE 96
+#define STACK_SIZE 128
 #endif
 
 //makros

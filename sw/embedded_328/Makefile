@@ -20,17 +20,21 @@ SRC += src/Uart/Uart.c
 SRC += src/Uart/Uart_Lcfg.c  
 SRC += src/Gpio/Gpio.c
 SRC += src/Gpio/Gpio_Lcfg.c 
-SRC += src/Spi/Spi.c
-SRC += src/Spi/Spi_Lcfg.c
+#SRC += src/Spi/Spi.c
+#SRC += src/Spi/Spi_Lcfg.c
 SRC += src/Adc/Adc.c
 SRC += src/Adc/Adc_Lcfg.c
 SRC += src/Tools/Tools.c
-SRC += src/Ssd1306/Ssd1306.c
+#SRC += src/Twi/Twi.c
+#SRC += src/Ssd1306/Ssd1306.c
+#SRC += src/Ssd1306/Framebuffer.c
 SRC += src/Dbg/Dbg.c
+U8GM2DIR:=src/u8g
+SRC += $(shell ls $(U8GM2DIR)/*.c 2>/dev/null)
 
 LIBSRC =  src/Os/idle.c src/Os/kernel.c src/Os/memory.c src/Os/message.c src/Os/scheduler.c src/Os/semaphore.c src/Os/task_control.c
 
-INC = -I./inc -I./src/Os/include -I./src/Uart -I./src/Spi -I./src/Ssd1306 -I./src/Adc -I./src/Gpio -I./src/Dbg -I./src/Tools
+INC = -I./inc -I./src/Os/include -I./src/Uart -I./src/Spi -I./src/Ssd1306 -I./src/Adc -I./src/Gpio -I./src/Dbg -I./src/Tools -I./src/Twi -I./src/u8g
 
 ASRC =
 OPT = s
@@ -58,11 +62,12 @@ CINCS =
 
 
 CDEBUG = -g$(DEBUG)
-CWARN = -ffreestanding -pedantic -Wall -Wextra -Winit-self -Wswitch-default -Wunused-parameter -Wunknown-pragmas -Wstrict-overflow=1 -Warray-bounds -Wfloat-equal -Wdeclaration-after-statement -Wundef -Wno-endif-labels -Wshadow -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs -Wvla -Wvolatile-register-var -Wparentheses -g -Os -fno-strict-aliasing
+CWARN = -ffreestanding -pedantic -Wall -Wextra -Winit-self -Wswitch-default -Wunused-parameter -Wunknown-pragmas -Wstrict-overflow=1 -Warray-bounds -Wfloat-equal -Wdeclaration-after-statement -Wundef -Wno-endif-labels -Wshadow -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs -Wvla -Wvolatile-register-var -Wparentheses -g -Os -fno-strict-aliasing 
+#CWARN = -ffreestanding -pedantic -Wall -Wextra -Winit-self -Wswitch-default -Wunused-parameter -Wunknown-pragmas -Wstrict-overflow=1 -Warray-bounds -Wfloat-equal -Wdeclaration-after-statement -Wundef -Wno-endif-labels -Wshadow -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs -Wvla -Wvolatile-register-var -Wparentheses -g -Os -fno-strict-aliasing -ffunction-sections -fdata-sections
 CTUNING = -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 #CEXTRA = -Wa,-adhlns=$(<:.c=.lst)
-$CFLAGS = $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CSTANDARD) $(CEXTRA)
-CFLAGS = $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CSTANDARD) $(CEXTRA)
+#CFLAGS = $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CSTANDARD) $(CEXTRA)
+CFLAGS = $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CSTANDARD) $(CEXTRA) -ffunction-sections -fdata-sections
 
 
 #ASFLAGS = -Wa,-adhlns=$(<:.S=.lst),-gstabs
@@ -101,17 +106,19 @@ MATH_LIB = -lm
 EXTMEMOPTS =
 
 #LDMAP = $(LDFLAGS) -Wl,-Map=$(TARGET).map,--cref
-LDFLAGS = $(EXTMEMOPTS) $(LDMAP) $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
+LDFLAGS = $(EXTMEMOPTS) $(LDMAP) $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB) -Wl,--gc-sections
 
 
 # Programming support using avrdude. Settings and variables.
 
-#AVRDUDE_PROGRAMMER = usbasp
-AVRDUDE_PORT = /dev/ttyACM0
-
-AVRDUDE_PROGRAMMER = stk500v2
+#AVRDUDE_PROGRAMMER = arduino
+AVRDUDE_PROGRAMMER = dragon_isp
+#AVRDUDE_PROGRAMMER = stk500v2
 #AVRDUDE_PORT = /dev/ttyUSB0
-AVRDUDE_BAUD = 57600
+#AVRDUDE_PORT = /dev/ttyACM0
+AVRDUDE_PORT = usb
+AVRDUDE_BAUD = 115200
+#AVRDUDE_BAUD = 38400
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
@@ -175,7 +182,7 @@ sym: $(TARGET).sym
 # Program the device.
 program: $(TARGET).hex $(TARGET).eep
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
-#	/data/programme/arduino-1.6.5/hardware/tools/avr/bin/avrdude -C/data/programme/arduino-1.6.5/hardware/tools/avr/etc/avrdude.conf -v -patmega328p -carduino -P/dev/ttyUSB0 -b57600 -D -Uflash:w:main.hex:i
+	#/data/programme/arduino-1.6.5/hardware/tools/avr/bin/avrdude -C/data/programme/arduino-1.6.5/hardware/tools/avr/etc/avrdude.conf -v -patmega328p -c arduino -P/dev/ttyUSB0 -b57600 -D -Uflash:w:main.hex:i
 
 
 
@@ -259,4 +266,3 @@ doxygen:
 	$(DOXYGEN_CALL) $(DOXYGEN_CONFIG)
 
 .PHONY:	all build elf hex eep lss sym program coff extcoff clean depend lint doxygen
-
