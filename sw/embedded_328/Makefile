@@ -20,21 +20,22 @@ SRC += src/Uart/Uart.c
 SRC += src/Uart/Uart_Lcfg.c  
 SRC += src/Gpio/Gpio.c
 SRC += src/Gpio/Gpio_Lcfg.c 
-#SRC += src/Spi/Spi.c
-#SRC += src/Spi/Spi_Lcfg.c
+SRC += src/Gpt/Gpt.c
+SRC += src/Gpt/Gpt_Lcfg.c
 SRC += src/Adc/Adc.c
 SRC += src/Adc/Adc_Lcfg.c
 SRC += src/Tools/Tools.c
-#SRC += src/Twi/Twi.c
-#SRC += src/Ssd1306/Ssd1306.c
-#SRC += src/Ssd1306/Framebuffer.c
+SRC += src/App/TaskA.c
+SRC += src/App/TaskClock.c
+SRC += src/App/Os_Init.c
+SRC += src/App/TaskUart.c
 SRC += src/Dbg/Dbg.c
 U8GM2DIR:=src/u8g
 SRC += $(shell ls $(U8GM2DIR)/*.c 2>/dev/null)
 
 LIBSRC =  src/Os/idle.c src/Os/kernel.c src/Os/memory.c src/Os/message.c src/Os/scheduler.c src/Os/semaphore.c src/Os/task_control.c
 
-INC = -I./inc -I./src/Os/include -I./src/Uart -I./src/Spi -I./src/Ssd1306 -I./src/Adc -I./src/Gpio -I./src/Dbg -I./src/Tools -I./src/Twi -I./src/u8g
+INC = -I./inc -I./src/Os/include -I./src/Uart -I./src/Gpt -I./src/App -I./src/Adc -I./src/Gpio -I./src/Dbg -I./src/Tools -I./src/Twi -I./src/u8g
 
 ASRC =
 OPT = s
@@ -76,10 +77,10 @@ CFLAGS = $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CSTANDARD) $(CEXTRA) -ffunction-
 #Additional libraries.
 
 # Minimalistic printf version
-PRINTF_LIB_MIN = -Wl,-u,vfprintf -lprintf_min
+#PRINTF_LIB_MIN = -Wl,-u,vfprintf -lprintf_min
 
 # Floating point printf version (requires MATH_LIB = -lm below)
-#PRINTF_LIB_FLOAT = -Wl,-u,vfprintf -lprintf_flt
+PRINTF_LIB_FLOAT = -Wl,-u,vfprintf -lprintf_flt
 
 PRINTF_LIB =$(PRINTF_LIB_FLOAT)
 

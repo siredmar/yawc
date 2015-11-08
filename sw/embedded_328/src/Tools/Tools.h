@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "Std_Types.h"
 
-/*--- Macros ---------------------------------------------------------*/
-
+uint8 FloatContainsDecimals(float32 num);
 #endif

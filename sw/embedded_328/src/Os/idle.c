@@ -27,9 +27,9 @@ void idle()
     while (1)
     {
         wdt_reset();
-        set_sleep_mode(SLEEP_MODE_IDLE);
+//        set_sleep_mode(SLEEP_MODE_IDLE);
         TIMER_REGISTER = CLK1;
         TCNT0 = 0xFF;
-        sleep_mode();
+//        sleep_mode();
     }
 } 

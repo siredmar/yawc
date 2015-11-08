@@ -1,3 +1,6 @@
+#ifndef NANO_OS_H
+#define NANO_OS_H
+
 /*---------------------------------------------------------------------
  * nano_os.h
  *
@@ -25,7 +28,7 @@
 
 /*  set in Makefile ! */
 // undefine to save memory if signal & wait are not needed
-#define TASK_USE_SLEEP
+//#define TASK_USE_SLEEP
 
 // undefine to save memory if task anhilate is not needed
 //#define TASK_USE_ANHILATE
@@ -34,7 +37,7 @@
 //#define TASK_USE_MESSAGE
 
 // undefine to save memory if semaphore is not needed
- #define TASK_USE_SEMAPHORE
+// #define TASK_USE_SEMAPHORE
 
 // undefine to save memory if memory management is not needed
 //#define TASK_USE_MEM
@@ -143,7 +146,7 @@
 //number of tasks in the target system (incl. the idle task)
 
 #ifndef TASKS
-#define TASKS 3
+#define TASKS 2
 #endif
 
 //Stack size for each task in byte. 
@@ -151,7 +154,7 @@
 //Often 64 or 96 is a good idea.
 
 #ifndef STACK_SIZE
-#define STACK_SIZE 128
+#define STACK_SIZE 255
 #endif
 
 //makros
@@ -318,3 +321,4 @@ typedef volatile struct Task
                                 extern volatile unsigned char stack_global[TASKS*STACK_SIZE];
                                 extern Task idletask;
 
+#endif
