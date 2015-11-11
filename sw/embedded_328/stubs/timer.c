@@ -65,7 +65,7 @@ Gpt_TimerCalcType Gpt_ConfigureTimer(Gpt_TimerType TimerType, uint16 targetMs)
     float32 TimerBoundary = 0.0;
     if(TimerType == TIMER_16BIT_0)
     {
-        TimerBoundary = 255.0;
+        TimerBoundary = 65535.0;
     }
     else
     {
@@ -94,7 +94,7 @@ Gpt_TimerCalcType Gpt_ConfigureTimer(Gpt_TimerType TimerType, uint16 targetMs)
 int main(void)
 {
     Gpt_TimerCalcType timer;
-    timer = Gpt_ConfigureTimer(TIMER_8BIT_0, 2);
+    timer = Gpt_ConfigureTimer(TIMER_16BIT_0, 1000);
     printf("timer.TCNT_Reg: %d\n", timer.TCNT_Reg);
     printf("timer.prescaler: %d\n", PrescalerArray[timer.prescaler]);
     printf("timer.classifier: %d\n", timer.classifier);

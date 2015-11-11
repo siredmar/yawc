@@ -21,18 +21,18 @@ const Gpt_ConfigType Gpt_InitialConfiguration_s =
                         GPT_CALLBACK_NULL_PTR
                 },
                 {
-                        TIMER_USED,
+                        TIMER_UNUSED,
                         TIMER_8BIT_1,
                         2u, /* Timer Timebase */
                         500u,  /* Modulo counter */
-                        AppClock_SecondIncrement
+                        GPT_CALLBACK_NULL_PTR
                 },
                 {
-                        TIMER_UNUSED,
+                        TIMER_USED,
                         TIMER_16BIT_0,
-                        2,
-                        10,
-                        GPT_CALLBACK_NULL_PTR//App_SecondIncrement
+                        1000,
+                        1,
+                        AppClock_SecondIncrement//App_SecondIncrement
                 }
         }
 };

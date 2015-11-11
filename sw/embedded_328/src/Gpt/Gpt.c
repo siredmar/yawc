@@ -62,11 +62,14 @@ Gpt_TimerCalcType Gpt_ConfigureTimer(Gpt_TimerType TimerType, uint16 targetMs)
     Gpt_TimerCalcType Timer;
     float32 TCNT_Temp_f32 = 0.0;
     uint8 prescalerCounter = 0;
+    uint16 reg = 0;
+    uint8 prescaler = 0;
+    uint8 classifier = 0;
 
     float32 TimerBoundary = 0.0;
     if(TimerType == TIMER_16BIT_0)
     {
-        TimerBoundary = 255.0;
+        TimerBoundary = 65535.0;
     }
     else
     {
@@ -90,8 +93,13 @@ Gpt_TimerCalcType Gpt_ConfigureTimer(Gpt_TimerType TimerType, uint16 targetMs)
         {
             Timer.TCNT_Reg = (uint16)TCNT_Temp_f32;
             Timer.classifier = 1;
-            Dbg_ReadVariableInteger("TCNT_Reg: ", Timer.TCNT_Reg);
-            Dbg_ReadVariableInteger("classifier: ", Timer.classifier);
+            reg = Timer.TCNT_Reg;
+            prescaler = Timer.prescaler;
+            classifier = Timer.classifier;
+
+            Dbg_ReadVariableFloat("TCNT_Reg: ", TCNT_Temp_f32);
+            Dbg_ReadVariableFloat("prescaler: ", (float32)PrescalerArray[Timer.prescaler]);
+            Dbg_ReadVariableFloat("classifier: ", (float32)Timer.classifier);
             break;
         }
         else
@@ -119,12 +127,13 @@ void Gpt_Init(void)
         Timer[TIMER_8BIT_0] = Gpt_ConfigureTimer(TIMER_8BIT_0, LcfgConfigPtr_ps->Timer[TIMER_8BIT_0].TimerDelayMs_ui16);
         if(Timer[TIMER_8BIT_0].classifier == 1)
         {
+            Uart_WriteString(UART_HWUNIT_0, "II: CONFIGURED 8 BIT TIMER0\n\r");
             OCR0A = (uint8)Timer[TIMER_8BIT_0].TCNT_Reg;                      // set top value
             TCCR0B = (uint8)Timer[TIMER_8BIT_0].prescaler;                 // set prescaler
         }
         else
         {
-            Uart_WriteString(UART_HWUNIT_0, "EE: FAILED TO INITIALIZE TIMER0\n\r");
+            Uart_WriteString(UART_HWUNIT_0, "EE: FAILED TO INITIALIZE 8 BIT TIMER0\n\r");
         }
         TCNT0 = 0;                          // reset TCNT counter register
         TIMSK0 |= _BV(OCIE0A);              // enable interrupt
@@ -132,43 +141,44 @@ void Gpt_Init(void)
 
     if(LcfgConfigPtr_ps->Timer[TIMER_8BIT_1].TimerUsed_e == TIMER_USED)
     {
-        TIMSK1 &= ~(_BV(OCIE1A));
-
-        Timer[TIMER_8BIT_1] = Gpt_ConfigureTimer(TIMER_8BIT_1, LcfgConfigPtr_ps->Timer[TIMER_8BIT_1].TimerDelayMs_ui16);
-        if(Timer[TIMER_8BIT_1].classifier == 1)
-        {
-            TCCR1B = (uint8)Timer[TIMER_8BIT_1].prescaler | _BV(WGM12);
-            OCR1A = (uint8)Timer[TIMER_8BIT_1].TCNT_Reg;
-        }
-        else
-        {
-            Uart_WriteString(UART_HWUNIT_0, "EE: FAILED TO INITIALIZE TIMER1\n\r");
-        }
-        TCCR1A = 0;
-        TCNT1 = 0;
-        TIMSK1 |= _BV(OCIE1A);
-    }
-
-    if(LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].TimerUsed_e == TIMER_USED)
-    {
         TIMSK2 &= ~(_BV(OCIE2A));
         TCCR2A = _BV(WGM21);
         ASSR = 0;
 
-        Timer[TIMER_16BIT_0] = Gpt_ConfigureTimer(TIMER_16BIT_0, LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].TimerDelayMs_ui16);
-        if(Timer[TIMER_16BIT_0].classifier == 1)
+        Timer[TIMER_8BIT_1] = Gpt_ConfigureTimer(TIMER_8BIT_1, LcfgConfigPtr_ps->Timer[TIMER_8BIT_1].TimerDelayMs_ui16);
+        if(Timer[TIMER_8BIT_1].classifier == 1)
         {
-            TCCR2B = (uint8)Timer[TIMER_16BIT_0].prescaler;
-            OCR2A  = (uint8)Timer[TIMER_16BIT_0].TCNT_Reg;
+            Uart_WriteString(UART_HWUNIT_0, "II: CONFIGURED 8 BIT TIMER1\n\r");
+            TCCR2B = (uint8)Timer[TIMER_8BIT_1].prescaler;
+            OCR2A  = (uint8)Timer[TIMER_8BIT_1].TCNT_Reg;
         }
         else
         {
-            Uart_WriteString(UART_HWUNIT_0, "EE: FAILED TO INITIALIZE TIMER2\n\r");
+            Uart_WriteString(UART_HWUNIT_0, "EE: FAILED TO INITIALIZE 8 BIT TIMER1\n\r");
         }
         TCNT2 = 0;
         TIMSK2 |= _BV(OCIE2A);
     }
 
+    if(LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].TimerUsed_e == TIMER_USED)
+    {
+        TIMSK1 &= ~(_BV(OCIE1A));
+
+        Timer[TIMER_16BIT_0] = Gpt_ConfigureTimer(TIMER_16BIT_0, LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].TimerDelayMs_ui16);
+        if(Timer[TIMER_16BIT_0].classifier == 1)
+        {
+            Uart_WriteString(UART_HWUNIT_0, "II: CONFIGURED 16 BIT TIMER0\n\r");
+            TCCR1B = (uint8)Timer[TIMER_16BIT_0].prescaler | _BV(WGM12);
+            OCR1A = (uint16)Timer[TIMER_16BIT_0].TCNT_Reg;
+        }
+        else
+        {
+            Uart_WriteString(UART_HWUNIT_0, "EE: FAILED TO INITIALIZE 16 BIT TIMER0\n\r");
+        }
+        TCCR1A = 0;
+        TCNT1 = 0;
+        TIMSK1 |= _BV(OCIE1A);
+    }
 }
 
 Std_ReturnType Gpt_TimerStart(Gpt_TimerType timer)
@@ -232,7 +242,7 @@ ISR(TIMER0_COMPA_vect)
     Period_ui16++;
     if(Period_ui16 >= LcfgConfigPtr_ps->Timer[TIMER_8BIT_0].TimerModuloCounter_ui16)
     {
-//        Dbg_ReadRegister(UART_HWUNIT_0, "TIMER0_COMPA_vect", &Period_ui16);
+        Dbg_ReadRegister(UART_HWUNIT_0, "TIMER0_COMPA_vect", &Period_ui16);
         Period_ui16 = 0;
         if(LcfgConfigPtr_ps->Timer[TIMER_8BIT_0].Gpt_Callback_pv != GPT_CALLBACK_NULL_PTR)
         {
@@ -245,13 +255,13 @@ ISR(TIMER1_COMPA_vect)
 {
     static uint16 Period_ui16 = 0;
     Period_ui16++;
-    if(Period_ui16 >= LcfgConfigPtr_ps->Timer[TIMER_8BIT_1].TimerModuloCounter_ui16)
+    if(Period_ui16 >= LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].TimerModuloCounter_ui16)
     {
-//        Dbg_ReadRegister(UART_HWUNIT_0, "TIMER1_COMPA_vect", &Period_ui16);
+        Dbg_ReadRegister(UART_HWUNIT_0, "TIMER1_COMPA_vect", &Period_ui16);
         Period_ui16 = 0;
-        if(LcfgConfigPtr_ps->Timer[TIMER_8BIT_1].Gpt_Callback_pv != GPT_CALLBACK_NULL_PTR)
+        if(LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].Gpt_Callback_pv != GPT_CALLBACK_NULL_PTR)
         {
-            LcfgConfigPtr_ps->Timer[TIMER_8BIT_1].Gpt_Callback_pv();
+            LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].Gpt_Callback_pv();
         }
     }
 }
@@ -260,13 +270,13 @@ ISR(TIMER2_COMPA_vect)
 {
     static uint16 Period_ui16 = 0;
     Period_ui16++;
-    if(Period_ui16 >= LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].TimerModuloCounter_ui16)
+    if(Period_ui16 >= LcfgConfigPtr_ps->Timer[TIMER_8BIT_1].TimerModuloCounter_ui16)
     {
-//        Dbg_ReadRegister(UART_HWUNIT_0, "TIMER2_COMPA_vect", &Period_ui16);
+        Dbg_ReadRegister(UART_HWUNIT_0, "TIMER2_COMPA_vect", &Period_ui16);
         Period_ui16 = 0;
-        if(LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].Gpt_Callback_pv != GPT_CALLBACK_NULL_PTR)
+        if(LcfgConfigPtr_ps->Timer[TIMER_8BIT_1].Gpt_Callback_pv != GPT_CALLBACK_NULL_PTR)
         {
-            LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].Gpt_Callback_pv();
+            LcfgConfigPtr_ps->Timer[TIMER_8BIT_1].Gpt_Callback_pv();
         }
     }
 }
