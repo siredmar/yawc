@@ -12,6 +12,7 @@
 static uint8 daysOfMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 static void AppClock_DrawClock(uint8 sec, uint8 min, uint8 hour, uint8 day, uint8 month, uint8 year);
+static void AppClock_ClearScreen(void);
 
 u8g_t u8g;
 volatile uint8 second = 50;
@@ -21,7 +22,7 @@ volatile uint8 day = 31;
 volatile uint8 month = 12;
 volatile uint8 year = 15;
 volatile uint8 AppClock_ClockChanged_ui8;
-volatile uint8 AppClock_DisplayUpdatePossible_ui8;
+//volatile uint8 AppClock_DisplayUpdatePossible_ui8;
 
 static void AppClock_DrawClock(uint8 sec, uint8 min, uint8 hour, uint8 day, uint8 month, uint8 year)
 {
@@ -38,16 +39,26 @@ static void AppClock_DrawClock(uint8 sec, uint8 min, uint8 hour, uint8 day, uint
     u8g_DrawStr(&u8g, 30, 50, str);
 }
 
+static void AppClock_ClearScreen(void)
+{
+    u8g_FirstPage(&u8g);
+    do
+    {
+    } while ( u8g_NextPage(&u8g) );
+}
+
 void AppClock_Init(void)
 {
+    AppClock_ClearScreen();
     AppClock_ClockChanged_ui8 = TRUE;
-    AppClock_DisplayUpdatePossible_ui8 = TRUE;
+//    AppClock_DisplayUpdatePossible_ui8 = TRUE;
     AppClock_CheckIfLeapYear(year);
 }
 
 void AppClock_SecondIncrement(void)
 {
     second++;
+    Uart_WriteString(UART_HWUNIT_0, "II: Second Increment");
     AppClock_ClockChanged_ui8 = TRUE;
     if(second > 59)
     {
@@ -85,17 +96,18 @@ void AppClock_Handler(void)
     {
         if(AppClock_ClockChanged_ui8 == TRUE)
         {
-            if(AppClock_DisplayUpdatePossible_ui8 == TRUE){
-                AppClock_DisplayUpdatePossible_ui8 = FALSE;
+            AppClock_ClockChanged_ui8 = FALSE;
+//            if(AppClock_DisplayUpdatePossible_ui8 == TRUE)
+//            {
+//                AppClock_DisplayUpdatePossible_ui8 = FALSE;
                 Uart_WriteString(UART_HWUNIT_0, "II: Display update\n\r");
-                AppClock_ClockChanged_ui8 = FALSE;
                 u8g_FirstPage(&u8g);
                 do
                 {
                     AppClock_DrawClock(second, minute, hour, day, month, year);
                 } while ( u8g_NextPage(&u8g) );
-                AppClock_DisplayUpdatePossible_ui8 = TRUE;
-            }
+//                AppClock_DisplayUpdatePossible_ui8 = TRUE;
+//            }
         }
     }
 }

@@ -127,5 +127,6 @@ void Gpio_ToggleChannel(Gpio_ChannelType channel);
 
 Gpio_PortState Gpio_ReadPort(Gpio_PortType);
 void Gpio_WritePort(Gpio_PortType port, Gpio_PortState state);
+void Gpio_SwitchPinDirection(Gpio_ChannelType Channel, Gpio_PinInOutType Dir);
 
 #endif

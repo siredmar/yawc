@@ -30,8 +30,8 @@ const Gpt_ConfigType Gpt_InitialConfiguration_s =
                 {
                         TIMER_USED,
                         TIMER_16BIT_0,
-                        1000,
-                        1,
+                        500,
+                        2,
                         AppClock_SecondIncrement//App_SecondIncrement
                 }
         }

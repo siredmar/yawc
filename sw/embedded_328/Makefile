@@ -6,6 +6,7 @@
 
 #F_CPU = 7372800
 F_CPU = 16000000
+#F_CPU =  16020028
 
 #MCU = atmega2560
 #MCU = atmega128
@@ -122,7 +123,7 @@ AVRDUDE_BAUD = 115200
 #AVRDUDE_BAUD = 38400
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
-AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
+#AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
 
 
 # Uncomment the following if you want avrdude's erase cycle counter.
@@ -265,5 +266,9 @@ depend:
 
 doxygen:
 	$(DOXYGEN_CALL) $(DOXYGEN_CONFIG)
+
+stubs:
+	rm stubs/timer 	
+	gcc stubs/timer.c -o stubs/timer
 
 .PHONY:	all build elf hex eep lss sym program coff extcoff clean depend lint doxygen

@@ -29,4 +29,5 @@
 #include "Std_Types.h"
 
 uint8 FloatContainsDecimals(float32 num);
+float32 GetFloatDecimals(float32 num);
 #endif

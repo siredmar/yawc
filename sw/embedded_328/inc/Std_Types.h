@@ -2,7 +2,7 @@
 #ifndef STD_TYPES_H
 #define STD_TYPES_H
 
-#include <Platform_Types.h>
+#include "Platform_Types.h"
 
 typedef uint8 Std_ReturnType;
 

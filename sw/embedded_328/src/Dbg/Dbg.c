@@ -9,8 +9,11 @@
 #include "Dbg.h"
 #include <avr/io.h>
 
+//#define DBG_ENABLE
+
 static void Dbg_HexToString(uint8* str, uint8 len, uint8 val)
 {
+#ifdef DBG_ENABLE
     uint8 i;
 
   for(i=1; i<=len; i++)
@@ -30,11 +33,13 @@ static void Dbg_HexToString(uint8* str, uint8 len, uint8 val)
   }
 
   str[i-1] = '\0';
+#endif
 }
 
 
 void Dbg_ReadRegister(uint8 UartHwUnit, uint8 str[], uint8 address)
 {
+#ifdef DBG_ENABLE
     uint8 registerString[8];
     uint8 registerValue = 0;
     if(address != NULL)
@@ -47,22 +52,27 @@ void Dbg_ReadRegister(uint8 UartHwUnit, uint8 str[], uint8 address)
     Uart_WriteString(UartHwUnit, "0x");
     Uart_WriteString(UartHwUnit, registerString);
     Uart_WriteString(UartHwUnit, "\n\r");
+#endif
 }
 
 
 void Dbg_ReadVariableInteger(uint8 str[], uint32 variable)
 {
+#ifdef DBG_ENABLE
     uint8 string[30];
 //    sprintf(string, " %d\r\n", (uint32)variable);
     itoa(variable, string, 10);
     Uart_WriteString(UART_HWUNIT_0, str);
     Uart_WriteString(UART_HWUNIT_0, string);
+#endif
 }
 
 void Dbg_ReadVariableFloat(uint8 str[], float32 variable)
 {
+#ifdef DBG_ENABLE
     uint8 string[30];
     sprintf(string, " %f\r\n", (float64)variable);
     Uart_WriteString(UART_HWUNIT_0, str);
     Uart_WriteString(UART_HWUNIT_0, string);
+#endif
 }

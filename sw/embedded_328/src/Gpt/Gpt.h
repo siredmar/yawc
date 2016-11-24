@@ -23,14 +23,11 @@ typedef enum
     GPT_MAX_NUM_OF_TIMERS
 } Gpt_TimerType;
 
-
 typedef enum
 {
     TIMER_UNUSED = (0u),
     TIMER_USED
 } Gpt_TimerUsedType;
-
-
 
 typedef enum
 {
@@ -65,6 +62,10 @@ typedef struct
     uint16 TCNT_Reg;
     Gpt_PrescalerType prescaler;
     uint8 classifier;
+//    float32 Rest;
+//    uint16 RestCounter;
+    uint16 RestCounterLimit;
+//    sint8 RestCounterUpDown;
 } Gpt_TimerCalcType;
 
 

@@ -24,7 +24,7 @@
 
 uint8 FloatContainsDecimals(float32 num)
 {
-    float32 intpart = (uint16)num;
+    float32 intpart = (uint32)num;
     float32 decpart = (float32)((float32)num - (float32)intpart);
     if(decpart == 0.0f)
     {
@@ -35,3 +35,11 @@ uint8 FloatContainsDecimals(float32 num)
         return 1;
     }
 }
+
+float32 GetFloatDecimals(float32 num)
+{
+    float32 intpart = (uint32)num;
+    float32 decpart = (float32)((float32)num - (float32)intpart);
+    return decpart;
+}
+

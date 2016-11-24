@@ -12,7 +12,7 @@
 #include "Tools.h"
 
 static Gpt_CallbackType Gpt_Callback_pv[GPT_MAX_NUM_OF_TIMERS];
-static Gpt_ConfigType        *LcfgConfigPtr_ps;
+static Gpt_ConfigType   *LcfgConfigPtr_ps;
 
 //
 static uint16 PrescalerArray[NUMBER_OF_PRESCALERS] = {0, 1, 8, 64, 256, 1024};
@@ -62,9 +62,7 @@ Gpt_TimerCalcType Gpt_ConfigureTimer(Gpt_TimerType TimerType, uint16 targetMs)
     Gpt_TimerCalcType Timer;
     float32 TCNT_Temp_f32 = 0.0;
     uint8 prescalerCounter = 0;
-    uint16 reg = 0;
-    uint8 prescaler = 0;
-    uint8 classifier = 0;
+    float32 TimerDecimals_f32 = 0.0;
 
     float32 TimerBoundary = 0.0;
     if(TimerType == TIMER_16BIT_0)
@@ -76,37 +74,52 @@ Gpt_TimerCalcType Gpt_ConfigureTimer(Gpt_TimerType TimerType, uint16 targetMs)
         TimerBoundary = 255.0;
     }
 
-    for(prescalerCounter = PRESCALER_1024; prescalerCounter >= PRESCALER_1; prescalerCounter--)
+    for(prescalerCounter = PRESCALER_1; prescalerCounter <= PRESCALER_1024; prescalerCounter++)
     {
         Timer.prescaler = prescalerCounter;
-
         TCNT_Temp_f32  = (((float32)targetMs) * (float32)(F_CPU/1000) / (float32)PrescalerArray[prescalerCounter]) - 1;
-
-
-        Dbg_ReadVariableFloat("TCNT_Temp_f32: ", TCNT_Temp_f32);
-//        Uart_WriteString(UART_HWUNIT_0, "TCNT_Temp_F32: ");
-//        Uart_WriteString(UART_HWUNIT_0, dbg_str);
-//        Uart_WriteString(UART_HWUNIT_0, "\n\r");
-//        Dbg_ReadRegister(UART_HWUNIT_0, "prescalerCounter: ", prescalerCounter);
-
-        if((FloatContainsDecimals(TCNT_Temp_f32) == 0) && (TCNT_Temp_f32 <= TimerBoundary))
+//        printf("TCNT_Temp_f32: %f\n", TCNT_Temp_f32);
+        TimerDecimals_f32 = (GetFloatDecimals(TCNT_Temp_f32));
+        if(TCNT_Temp_f32 <= TimerBoundary)
+//        if((TimerDecimals_f32 <= 0.25) && (TCNT_Temp_f32 <= TimerBoundary))
         {
+//            printf("Decimals: %f\n", (GetFloatDecimals(TCNT_Temp_f32)));
             Timer.TCNT_Reg = (uint16)TCNT_Temp_f32;
             Timer.classifier = 1;
-            reg = Timer.TCNT_Reg;
-            prescaler = Timer.prescaler;
-            classifier = Timer.classifier;
+//            Timer.Rest = TimerDecimals_f32;
+            Timer.RestCounterLimit = (uint16)(1.0f/TimerDecimals_f32);
+//            Timer.RestCounterUpDown = 1;
 
-            Dbg_ReadVariableFloat("TCNT_Reg: ", TCNT_Temp_f32);
-            Dbg_ReadVariableFloat("prescaler: ", (float32)PrescalerArray[Timer.prescaler]);
-            Dbg_ReadVariableFloat("classifier: ", (float32)Timer.classifier);
+//            printf("Timer.Rest: %f\n", Timer.Rest);
+//            printf("Timer.RestCounterLimit: %d\n",  Timer.RestCounterLimit);
             break;
         }
+//        else if((TimerDecimals_f32 >= 0.75) && (TCNT_Temp_f32 <= TimerBoundary))
+//        {
+//            printf("Decimals: %f\n", (GetFloatDecimals(TCNT_Temp_f32)));
+//            Timer.TCNT_Reg = (uint16)TCNT_Temp_f32 + 1;
+//            Timer.classifier = 1;
+//            Timer.Rest = 1 - TimerDecimals_f32;
+//            Timer.RestCounterLimit = (uint16)(1.0f/Timer.Rest);
+//            Timer.RestCounterUpDown = -1;
+//
+//            printf("Timer.Rest: %f\n", Timer.Rest);
+//            printf("Timer.RestCounterLimit: %d\n",  Timer.RestCounterLimit);
+//            break;
+//        }
         else
         {
+//            printf("Decimals: %f\n", (GetFloatDecimals(TCNT_Temp_f32)));
             Timer.classifier = 0;
         }
     }
+    Dbg_ReadVariableInteger("TCNT_Reg: ", Timer.TCNT_Reg);
+    Dbg_ReadVariableInteger("prescaler: ", PrescalerArray[Timer.prescaler]);
+    Dbg_ReadVariableInteger("classifier: ", (float32)Timer.classifier);
+//    Dbg_ReadVariableFloat("Rest: ", (float32)Timer.Rest);
+//    Dbg_ReadVariableFloat("RestCounter: ", (float32)Timer.RestCounter);
+    Dbg_ReadVariableInteger("RestCounterLimit: ", (float32)Timer.RestCounterLimit);
+//    Dbg_ReadVariableFloat("RestCounterUpDown: ", (float32)Timer.RestCounterUpDown);
     return Timer;
 }
 
@@ -168,12 +181,16 @@ void Gpt_Init(void)
         if(Timer[TIMER_16BIT_0].classifier == 1)
         {
             Uart_WriteString(UART_HWUNIT_0, "II: CONFIGURED 16 BIT TIMER0\n\r");
+            Dbg_ReadVariableInteger("TCNT_Reg: ", (uint32)Timer[TIMER_16BIT_0].TCNT_Reg);
+            Dbg_ReadVariableInteger("prescaler: ", (uint32)Timer[TIMER_16BIT_0].prescaler);
             TCCR1B = (uint8)Timer[TIMER_16BIT_0].prescaler | _BV(WGM12);
             OCR1A = (uint16)Timer[TIMER_16BIT_0].TCNT_Reg;
         }
         else
         {
             Uart_WriteString(UART_HWUNIT_0, "EE: FAILED TO INITIALIZE 16 BIT TIMER0\n\r");
+            Dbg_ReadVariableInteger("TCNT_Reg: ", (uint32)Timer[TIMER_16BIT_0].TCNT_Reg);
+            Dbg_ReadVariableInteger("prescaler: ", (uint32)Timer[TIMER_16BIT_0].prescaler);
         }
         TCCR1A = 0;
         TCNT1 = 0;
@@ -200,7 +217,7 @@ Std_ReturnType Gpt_TimerStart(Gpt_TimerType timer)
         case TIMER_16BIT_0:
             if(LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].TimerUsed_e == TIMER_USED)
             {
-                TCCR2B = Timer[TIMER_16BIT_0].prescaler;;
+                TCCR2B = Timer[TIMER_16BIT_0].prescaler;
             }
             break;
         default:
@@ -239,10 +256,17 @@ Std_ReturnType Gpt_TimerStop(Gpt_TimerType timer)
 ISR(TIMER0_COMPA_vect)
 {
     static uint16 Period_ui16 = 0;
-    Period_ui16++;
+    if((Period_ui16 % Timer[TIMER_8BIT_0].RestCounterLimit) != 0)
+    {
+        Period_ui16++;
+    }
+    else
+    {
+        /* dont increment because we need to compensate oscillator */
+    }
+
     if(Period_ui16 >= LcfgConfigPtr_ps->Timer[TIMER_8BIT_0].TimerModuloCounter_ui16)
     {
-        Dbg_ReadRegister(UART_HWUNIT_0, "TIMER0_COMPA_vect", &Period_ui16);
         Period_ui16 = 0;
         if(LcfgConfigPtr_ps->Timer[TIMER_8BIT_0].Gpt_Callback_pv != GPT_CALLBACK_NULL_PTR)
         {
@@ -254,10 +278,16 @@ ISR(TIMER0_COMPA_vect)
 ISR(TIMER1_COMPA_vect)
 {
     static uint16 Period_ui16 = 0;
-    Period_ui16++;
+//    if((Period_ui16 % Timer[TIMER_16BIT_0].RestCounterLimit) != 0)
+//    {
+        Period_ui16++;
+//    }
+//    else
+//    {
+//        /* dont increment because we need to compensate oscillator */
+//    }
     if(Period_ui16 >= LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].TimerModuloCounter_ui16)
     {
-        Dbg_ReadRegister(UART_HWUNIT_0, "TIMER1_COMPA_vect", &Period_ui16);
         Period_ui16 = 0;
         if(LcfgConfigPtr_ps->Timer[TIMER_16BIT_0].Gpt_Callback_pv != GPT_CALLBACK_NULL_PTR)
         {
@@ -269,10 +299,16 @@ ISR(TIMER1_COMPA_vect)
 ISR(TIMER2_COMPA_vect)
 {
     static uint16 Period_ui16 = 0;
-    Period_ui16++;
+    if((Period_ui16 % Timer[TIMER_8BIT_1].RestCounterLimit) != 0)
+    {
+        Period_ui16++;
+    }
+    else
+    {
+        /* dont increment because we need to compensate oscillator */
+    }
     if(Period_ui16 >= LcfgConfigPtr_ps->Timer[TIMER_8BIT_1].TimerModuloCounter_ui16)
     {
-        Dbg_ReadRegister(UART_HWUNIT_0, "TIMER2_COMPA_vect", &Period_ui16);
         Period_ui16 = 0;
         if(LcfgConfigPtr_ps->Timer[TIMER_8BIT_1].Gpt_Callback_pv != GPT_CALLBACK_NULL_PTR)
         {

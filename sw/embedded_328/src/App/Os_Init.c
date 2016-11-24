@@ -21,11 +21,12 @@ void init_user_environment()
     Gpt_Init();
     u8g_Init(&u8g, &u8g_dev_ssd1306_128x64_2x_i2c);
     AppClock_Init();
+    Gpt_TimerStart(TIMER_16BIT_0);
 
-//    Uart_WriteString(UART_HWUNIT_0, "System started...\n\r");
+    Uart_WriteString(UART_HWUNIT_0, "System started\n\r");
 //    task_insert(&TaskA, TaskA_Handler, 20);
     task_insert(&TaskDrawClock, AppClock_Handler, 200);
-//    Uart_WriteString(UART_HWUNIT_0, "System up and running...\n\r");
+    Uart_WriteString(UART_HWUNIT_0, "System up and running!\n\r");
 
 
 }

@@ -99,3 +99,18 @@ void Gpio_WritePort(Gpio_PortType port, Gpio_PortState state)
 {
     *(Gpio_RegisterAdress_as[port].Gpio_PortRegister_pui8) = (uint8) state;
 }
+
+void Gpio_SwitchPinDirection(Gpio_ChannelType Channel, Gpio_PinInOutType Dir)
+{
+    Gpio_PortType port_ui8 = (Channel >> 8);
+    Gpio_PinType pin_ui8 = (Channel & 0xFF);
+    if(Dir == GPIO_OUTPUT)
+    {
+        SET_BIT(*(Gpio_RegisterAdress_as[port_ui8].Gpio_DirectionRegister_pui8), pin_ui8);
+    }
+    else
+    {
+        CLEAR_BIT(*(Gpio_RegisterAdress_as[port_ui8].Gpio_DirectionRegister_pui8), pin_ui8);
+    }
+
+}
